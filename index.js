@@ -9,19 +9,19 @@ const reportProblemRoute = require("./routes/reportProblemRoute")
 const loginRoute = require("./routes/loginRoute")
 const transactionRoute = require("./routes/transactionRoute")
 
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
-app.use(cors())
 
 //NOTE: put proper RESPOND STATUS!! <- study different respond status IMPORTANT
 
-app.use("/Rates", rateRoute)
+app.use("/rates", rateRoute) // /getRates, /postRates
 
-app.use("/Report", reportProblemRoute)
+app.use("/report", reportProblemRoute) // /getReports, /postReports
 
-app.use("/Login", loginRoute)
+app.use("/login", loginRoute) // /postLogin
 
-app.use("/transaction", transactionRoute)
+app.use("/transaction", transactionRoute) // /getTransactions, /postTransactions
 
 app.listen(config.PORT, () => {
     console.log("Listening to port " + config.PORT)
