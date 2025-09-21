@@ -4,6 +4,7 @@ const db = require("../utils/connectToFirebase")
 
 
 exports.login = async (req, res) => {
+    console.log("Attempting a POST request for /login")
 
     //NOTE: ADD PROPER QUERY WHERE IT ONLY RETURN THE MATCHED SHIT
 

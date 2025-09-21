@@ -3,6 +3,8 @@ const db = require("../utils/connectToFirebase")
 
 exports.getTransactions = async (req, res) => { // RETURN ALL TRANSACTIONS OR RETURN TRANSACTION TO A SPECIFIC DEVICE
     
+    console.log("Attempting a GET request for /transactions")
+    
     if(req.query.device_id){ //RETRIEVE SPECIFIC DEVICES ONLY
         const q = query(collection(db, "transactions"),
                         where("device_id", "==", req.query.device_id))
@@ -39,6 +41,9 @@ exports.getTransactions = async (req, res) => { // RETURN ALL TRANSACTIONS OR RE
 }
 
 exports.setTransaction = async (req, res) => {
+
+    console.log("Attempting a POST request for /transactions")
+    
     const data = {
         amount: req.body.amount,
         device_id: req.body.device_id,

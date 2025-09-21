@@ -2,23 +2,26 @@ const { addDoc, collection, serverTimestamp, getDocs } = require("firebase/fires
 const db = require("../utils/connectToFirebase")
 
 exports.getRates = async (req, res) => {
-        const colRef = collection(db, "ratings")
-        const snap = await getDocs(colRef)
-    
-        if(!snap.empty) {
-            
-            const ratingSet = snap.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }))
-    
-            res.json(ratingSet)
-        }else{
-            res.json([])            
-        }
+    console.log("Attempting a GET request for /rates")
+
+    const colRef = collection(db, "ratings")
+    const snap = await getDocs(colRef)
+
+    if(!snap.empty) {
+        
+        const ratingSet = snap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }))
+
+        res.json(ratingSet)
+    }else{
+        res.json([])            
+    }
 }
 
 exports.setRates = async (req, res) => {
+    console.log("Attempting a POST request for /rates")
 
     const collectionName = "ratings";
     

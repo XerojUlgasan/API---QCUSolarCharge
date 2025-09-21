@@ -2,6 +2,8 @@ const { serverTimestamp, getDocs, collection, addDoc } = require("firebase/fires
 const db = require("../utils/connectToFirebase")
 
 exports.getProblems = async (req, res) => {
+    console.log("Attempting a GET request for /reports")
+
     const snap = await getDocs(collection(db, "reports"))
 
     if(!snap.empty){
@@ -18,6 +20,8 @@ exports.getProblems = async (req, res) => {
 }
 
 exports.setProblems = async (req, res) => {
+
+    console.log("Attempting a POST request for /reports")
 
     const collectionName = "reports"
 
