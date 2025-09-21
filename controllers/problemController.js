@@ -35,7 +35,8 @@ exports.setProblems = async (req, res) => {
         type: req.body.type, //req
         urgencyLevel: req.body.urgencyLevel, // req
         status: "Scheduled", //Scheduled (default), Investigating, Resolved
-        dateTime: serverTimestamp()
+        dateTime: serverTimestamp(),
+        photo: req.body.photo_url
     }
 
     const docRef = await addDoc(collection(db, collectionName), cleanData)

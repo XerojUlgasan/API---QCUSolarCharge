@@ -16,11 +16,8 @@ app.use(express.urlencoded({extended: true}))
 //NOTE: put proper RESPOND STATUS!! <- study different respond status IMPORTANT
 
 app.use("/rates", rateRoute) // /getRates, /postRates
-
 app.use("/report", reportProblemRoute) // /getReports, /postReports
-
 app.use("/login", loginRoute) // /postLogin
-
 app.use("/transaction", transactionRoute) // /getTransactions, /postTransactions
 
 app.listen(config.PORT, () => {

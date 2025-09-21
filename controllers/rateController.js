@@ -33,7 +33,8 @@ exports.setRates = async (req, res) => {
         dateTime: serverTimestamp(),
         location: req.body.location,
         rate: req.body.rate,
-        comment: req.body.comment
+        comment: req.body.comment,
+        photo: req.body.photo_url
     }
 
     try {
