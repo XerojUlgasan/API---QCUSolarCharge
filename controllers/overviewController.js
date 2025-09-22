@@ -1,6 +1,7 @@
 const { getDocs, collection, query, where, Timestamp } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 const getDayRange = require("../utils/getFirstAndLastHourOfTheDay")
+const {getStateOfCharge} = require("../utils/getBatteryPercentage")
 
 exports.getOverview = async (req, res) => {
     console.log("Attempting a GET for /overview")
@@ -22,6 +23,7 @@ exports.getOverview = async (req, res) => {
                 overviewData.total_power += Number(data.power || 0)
                 overviewData.devices.push({
                     id: d.id,
+                    percentage: getStateOfCharge(data.volt),
                     ...data
                 })
             })
