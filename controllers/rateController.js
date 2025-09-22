@@ -1,4 +1,4 @@
-const { addDoc, collection, serverTimestamp, getDocs } = require("firebase/firestore")
+const { addDoc, collection, serverTimestamp, getDocs, where } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 
 exports.getRates = async (req, res) => {
@@ -24,6 +24,20 @@ exports.setRates = async (req, res) => {
     console.log("Attempting a POST request for /rates")
 
     const collectionName = "ratings";
+
+    const snap = await getDocs(collection(db, collectionName), 
+                        where("email", "==", req.body.email))
+
+    if(!snap.empty){
+        console.log("Email already rated.")
+
+        res.json({
+            success: false,
+            message: "You have already submitted a rating."
+        })
+
+        return
+    }
     
     // //NOTE: Sanitize the data before sending
 
