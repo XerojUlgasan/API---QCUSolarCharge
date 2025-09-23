@@ -141,7 +141,6 @@ exports.getDevices = async (req, res) => {
         transactions: [],
         maintenance: [], //standby
         total_hours: 0,
-        satisfaction: 0,
         volt: 0,
         current: 0,
         power: 0,
@@ -196,6 +195,7 @@ exports.getDevices = async (req, res) => {
 
         data.revenue.total += metadata.amount
         data.uses.total += 1
+        data.total_hours += ((metadata.amount * 10) / 60)
 
         data.transactions.push(metadata)
     })
