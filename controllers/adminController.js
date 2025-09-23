@@ -1,4 +1,4 @@
-const { getDocs, collection, Timestamp } = require("firebase/firestore")
+const { getDocs, collection, Timestamp, query, where } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 
 const getDayRange = require("../utils/getFirstAndLastHourOfTheDay")
@@ -6,12 +6,13 @@ const getWeekRange = require("../utils/getFirstAndLastHourOfTheWeek")
 const getMonthRange = require("../utils/getFirstAndLastHourOfTheMonth") 
 const {getStateOfCharge} = require("../utils/getBatteryPercentage")
 
+const {startOfDay, endOfDay} = getDayRange()
+const {startOfWeek, endOfWeek} = getWeekRange()
+const {startOfMonth, endOfMonth} = getMonthRange()   
+
 exports.getDashboard = async (req, res) => {
     const devicesCol = "devices"
     const transactionsCol = "transactions"
-    const {startOfDay, endOfDay} = getDayRange()
-    const {startOfWeek, endOfWeek} = getWeekRange()
-    const {startOfMonth, endOfMonth} = getMonthRange()   
 
     const data = {
         energy_generated: {
@@ -108,3 +109,97 @@ exports.getDashboard = async (req, res) => {
     res.json(data)
     return
 } 
+
+exports.getDevices = async (req, res) => {
+    if(!req.query.device_id){
+        res.json({
+            message: "Insert device ID in query parameter!"
+        })
+
+        return
+    }
+
+    const data = {
+        revenue: {
+            daily: 0,
+            weekly: 0,
+            monthly: 0,
+            total: 0
+        },
+        uses: {
+            daily: 0,
+            weekly: 0,
+            monthly: 0,
+            total: 0
+        },
+        energy: { // standby
+            daily: 0,
+            weekly: 0,
+            monthly: 0,
+            total: 0
+        },
+        transactions: [],
+        maintenance: [], //standby
+        total_hours: 0,
+        satisfaction: 0,
+        volt: 0,
+        current: 0,
+        power: 0,
+        temperature: 0,
+        percentage: 0
+    }
+
+    const deviceId = req.query.device_id
+
+    const deviceQuery = query(collection(db, "devices")) //  get by doc id (QCU-001)
+    const transactionQuery = query(collection(db, "transactions"),
+                                    where("device_id", "==", deviceId))
+    // const maintenanceQuery =
+
+    const deviceSnap = await getDocs(deviceQuery)
+    const transactionSnap = await getDocs(transactionQuery)
+    // const maintenanceSnap
+
+    deviceSnap.docs.forEach((doc) => {
+        if(doc.id === deviceId){
+            console.log(doc.id)
+            console.log(deviceId)
+            const metadata = doc.data()
+
+            data.volt = metadata.volt
+            data.current = metadata.current
+            data.power = metadata.power
+            data.temperature = metadata.temperature
+            data.percentage = getStateOfCharge(metadata.volt)
+        }
+    })
+
+    transactionSnap.docs.forEach((doc) => {
+        const metadata = doc.data()
+
+        const transactionDate = metadata.date_time.toDate()
+
+        if(transactionDate >= startOfDay){
+                data.revenue.daily += metadata.amount
+                data.uses.daily += 1
+            }
+
+        if(transactionDate >= startOfWeek){
+                data.revenue.weekly += metadata.amount
+                data.uses.weekly += 1
+            }
+        
+        if(transactionDate >= startOfMonth){
+                data.revenue.monthly += metadata.amount
+                data.uses.monthly += 1
+        }
+
+        data.revenue.total += metadata.amount
+        data.uses.total += 1
+
+        data.transactions.push(metadata)
+    })
+
+    res.json(data)
+    return
+}

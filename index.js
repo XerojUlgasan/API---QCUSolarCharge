@@ -42,7 +42,7 @@ app.use("/report", reportProblemRoute) // /getReports, /postReports
 app.use("/login", loginRoute) // /postLogin
 app.use("/transaction", transactionRoute) // /getTransactions, /postTransactions
 app.use("/overview", overviewRoute) // /getOverview
-app.use("/admin", adminRoute)
+app.use("/admin", adminRoute) // /dashboard
 
 app.listen(config.PORT, () => {
     console.log("Listening to port " + config.PORT)
