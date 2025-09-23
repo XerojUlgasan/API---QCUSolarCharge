@@ -4,6 +4,7 @@ const db = require("../utils/connectToFirebase")
 const getDayRange = require("../utils/getFirstAndLastHourOfTheDay")
 const getWeekRange = require("../utils/getFirstAndLastHourOfTheWeek")
 const getMonthRange = require("../utils/getFirstAndLastHourOfTheMonth") 
+const {getStateOfCharge} = require("../utils/getBatteryPercentage")
 
 exports.getDashboard = async (req, res) => {
     const devicesCol = "devices"
@@ -58,11 +59,16 @@ exports.getDashboard = async (req, res) => {
     devicesSnaphot.docs.forEach(docs => { // DEVICES
         const metadata = docs.data()
 
+        const device = {
+            percentage: getStateOfCharge(metadata.volt),
+            ...metadata
+        }
+
         data.energy_generated.total += metadata.energy
         data.total_devices += 1
         data.active_devices += (metadata.status === "active") ? 1 : 0
         data.power_output += metadata.power
-        data.devices.push(metadata)
+        data.devices.push(device)
 
         //INSERT ENERGY GENERATED
     })
