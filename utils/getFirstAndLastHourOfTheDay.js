@@ -1,9 +1,12 @@
-function getDayRange(date = new Date()) {
+function getDayRange() {
+  const now = new Date();
 
-  const startOfDay = new Date(date);
+  // Start of the day (00:00:00.000)
+  const startOfDay = new Date(now);
   startOfDay.setHours(0, 0, 0, 0);
 
-  const endOfDay = new Date(date);
+  // End of the day (23:59:59.999)
+  const endOfDay = new Date(now);
   endOfDay.setHours(23, 59, 59, 999);
 
   return { startOfDay, endOfDay };

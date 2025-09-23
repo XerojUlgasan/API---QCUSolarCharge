@@ -29,14 +29,15 @@ exports.setProblems = async (req, res) => {
     // check if blank or not
 
     const cleanData = {
-        description: req.body.description || " ",
+        description: req.body.description || "",
         email: req.body.email, //req
         location: req.body.location, //req
         type: req.body.type, //req
         urgencyLevel: req.body.urgencyLevel, // req
         status: "Scheduled", //Scheduled (default), Investigating, Resolved
-        dateTime: serverTimestamp(),
-        photo: req.body.photo_url
+        dateTime: serverTimestamp(), 
+        name: req.body.name, // req
+        photo: req.body.photo_url || "" 
     }
 
     const docRef = await addDoc(collection(db, collectionName), cleanData)
