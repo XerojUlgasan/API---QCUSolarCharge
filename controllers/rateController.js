@@ -102,11 +102,13 @@ exports.editRates = async (req, res) => {
     const rateId = req.body.rate_id
     const rate = req.body.rate || 5
     const comment = req.body.comment || ""
+    const location = req.body.location
+    const building = req.body.building
 
-    if(!rateId || !rate){
+    if(!rateId || !rate || !location || !building){
         res.json({
             success: false,
-            message: "Requires rate_id and rate"
+            message: "Fields rate_id, rate, location, and building are required."
         })
 
         return
@@ -115,7 +117,9 @@ exports.editRates = async (req, res) => {
     try {
         await setDoc(doc(db, "ratings", rateId), {
             rate: rate,
-            comment: comment
+            comment: comment,
+            location: location,
+            building: building
         }, {merge: true})
 
         res.json({
