@@ -2,16 +2,17 @@ const { serverTimestamp, getDocs, collection, addDoc, Transaction } = require("f
 const db = require("../utils/connectToFirebase")
 const { report } = require("../routes/rateRoutes")
 
+const getStationLocations = require("../utils/getStationLocation")
+
 exports.getProblems = async (req, res) => {
     console.log("Attempting a GET request for /reports")
 
     try {
         const reportSnap = await getDocs(collection(db, "reports"))
-        const stationSnap = await getDocs(collection(db, "devices"))
 
         const data = {
             reports: [],
-            stations: []
+            stations: await getStationLocations()
         }
 
         reportSnap.docs.forEach(doc => {
@@ -19,15 +20,6 @@ exports.getProblems = async (req, res) => {
             data.reports.push({
                 transaction_id: doc.id,
                 ...metadata
-            })
-        })
-
-        stationSnap.docs.forEach(doc => {
-            const metadata = doc.data()
-            data.stations.push({
-                station_id: doc.id,
-                station_building: metadata.building || "",
-                station_location: metadata.location || ""
             })
         })
 
@@ -41,7 +33,7 @@ exports.getProblems = async (req, res) => {
             message: e.message
         })
     }
-
+    return
 }
 
 exports.setProblems = async (req, res) => {
