@@ -1,4 +1,4 @@
-const { addDoc, collection, serverTimestamp, getDocs, where, query } = require("firebase/firestore")
+const { addDoc, collection, serverTimestamp, getDocs, where, query, setDoc, doc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 
 exports.getRates = async (req, res) => {
@@ -8,6 +8,23 @@ exports.getRates = async (req, res) => {
     const colRef = collection(db, "ratings")
     const snap = await getDocs(colRef)
 
+    let hasRated = {}
+
+    if(req.query.email){
+        const q = query(collection(db, "ratings"),
+                        where("email", "==", req.query.email))
+        const hasRatedSnap = await getDocs(q)
+
+        hasRatedSnap.docs.forEach(doc => {
+            const metadata = doc.data()
+            
+            hasRated = {
+                ...metadata,
+                rate_id: doc.id
+            }
+        })
+    }
+
     if(!snap.empty) {
         
         const ratingSet = snap.docs.map(doc => ({
@@ -15,7 +32,10 @@ exports.getRates = async (req, res) => {
             ...doc.data()
         }))
 
-        res.json(ratingSet)
+        res.json({
+            ratings: ratingSet,
+            previous_rate: hasRated
+        })
     }else{
         res.json([])            
     }
@@ -75,4 +95,37 @@ exports.setRates = async (req, res) => {
 
         console.log(e)
     }
+}
+
+exports.editRates = async (req, res) => {
+    const rateId = req.body.rate_id
+    const rate = req.body.rate || 5
+    const comment = req.body.comment || ""
+
+    if(!rateId || !rate){
+        res.json({
+            success: false,
+            message: "Requires rate_id and rate"
+        })
+
+        return
+    }
+
+    try {
+        await setDoc(doc(db, "ratings", rateId), {
+            rate: rate,
+            comment: comment
+        }, {merge: true})
+
+        res.json({
+            success: true
+        })
+    } catch (e) {
+        res.json({
+            success: false,
+            message: e.message
+        })
+    }
+
+    return
 }
