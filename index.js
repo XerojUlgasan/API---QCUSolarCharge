@@ -17,18 +17,7 @@ app.use(express.urlencoded({extended: true}))
 
 //NOTE: put proper RESPOND STATUS!! <- study different respond status IMPORTANT
 
-//TODO: admin dashboard 
-    //Total energy                  // daily, weekly, monthly, overall
-    //total revenue                 // daily, weekly, monthly, overall
-    //uses                          // daily, weekly, monthly, overall
-    //device status/details     
-        //include percentage
-    //latest transactions           
-    //today's energy accumulated    
-
-    //active devices
-    //revenue
-
+//TODO:
     //total reports
     //under investigation
     //resolved
@@ -37,12 +26,15 @@ app.use(express.urlencoded({extended: true}))
 
 //TODO: add history for device's generated energy per hour
 
+//TODO: add "building" parameter in /postReports
+    // Identify different buildings and locations
+
 app.use("/rates", rateRoute) // /getRates, /postRates
 app.use("/report", reportProblemRoute) // /getReports, /postReports
 app.use("/login", loginRoute) // /postLogin
 app.use("/transaction", transactionRoute) // /getTransactions, /postTransactions
 app.use("/overview", overviewRoute) // /getOverview
-app.use("/admin", adminRoute) // /dashboard
+app.use("/admin", adminRoute) // /dashboard /devices /updateReport
 
 app.listen(config.PORT, () => {
     console.log("Listening to port " + config.PORT)

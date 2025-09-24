@@ -1,4 +1,4 @@
-const { getDocs, collection, Timestamp, query, where } = require("firebase/firestore")
+const { getDocs, collection, Timestamp, query, where, setDoc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 
 const getDayRange = require("../utils/getFirstAndLastHourOfTheDay")
@@ -62,6 +62,7 @@ exports.getDashboard = async (req, res) => {
 
         const device = {
             percentage: getStateOfCharge(metadata.volt),
+            device_id: docs.id,
             ...metadata
         }
 
@@ -145,12 +146,13 @@ exports.getDevices = async (req, res) => {
         current: 0,
         power: 0,
         temperature: 0,
-        percentage: 0
+        percentage: 0,
+        device_id: ""
     }
 
     const deviceId = req.query.device_id
 
-    const deviceQuery = query(collection(db, "devices")) //  get by doc id (QCU-001)
+    const deviceQuery = query(collection(db, "devices")) //  get by doc.id (QCU-001)
     const transactionQuery = query(collection(db, "transactions"),
                                     where("device_id", "==", deviceId))
     // const maintenanceQuery =
@@ -161,10 +163,9 @@ exports.getDevices = async (req, res) => {
 
     deviceSnap.docs.forEach((doc) => {
         if(doc.id === deviceId){
-            console.log(doc.id)
-            console.log(deviceId)
             const metadata = doc.data()
 
+            data.device_id = doc.id
             data.volt = metadata.volt
             data.current = metadata.current
             data.power = metadata.power
@@ -202,4 +203,18 @@ exports.getDevices = async (req, res) => {
 
     res.json(data)
     return
+}
+
+exports.updateReports = async (req, res) => {
+    if(req.query.problem_id){
+        await setDoc()
+    }else{
+        res.json({
+            message: "No problem ID included in query"
+        })
+    }
+}
+
+exports.updateDevices = async (req, res) => {
+
 }

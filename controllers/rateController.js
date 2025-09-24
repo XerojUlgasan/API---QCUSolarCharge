@@ -4,6 +4,7 @@ const db = require("../utils/connectToFirebase")
 exports.getRates = async (req, res) => {
     console.log("Attempting a GET request for /rates")
 
+    const deviceSnap = await getDocs(collection(db, "devices"))
     const colRef = collection(db, "ratings")
     const snap = await getDocs(colRef)
 
