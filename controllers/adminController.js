@@ -54,8 +54,25 @@ exports.getDashboard = async (req, res) => {
         power_output: 0,
     }
 
+    const energyHistorySnapshot = await getDocs(collection(db, "energyHistory"))
     const devicesSnaphot = await getDocs(collection(db, devicesCol))
     const transactionSnapshot = await getDocs(collection(db, transactionsCol))
+
+    energyHistorySnapshot.docs.forEach(doc => { // ENERGY HISTORY
+        const metadata = doc.data()
+        const recordDate = metadata.date_time.toDate()
+
+        if(recordDate >= startOfDay){
+                data.energy_generated.daily += metadata.energy_accumulated
+            }
+        if(recordDate >= startOfWeek){
+                data.energy_generated.weekly += metadata.energy_accumulated
+            }
+        if(recordDate >= startOfMonth){
+                data.energy_generated.monthly += metadata.energy_accumulated
+            }
+        data.energy_generated.total += metadata.energy_accumulated
+    })
 
     devicesSnaphot.docs.forEach(docs => { // DEVICES
         const metadata = docs.data()
@@ -66,7 +83,6 @@ exports.getDashboard = async (req, res) => {
             ...metadata
         }
 
-        data.energy_generated.total += metadata.energy
         data.total_devices += 1
         data.active_devices += (metadata.status === "active") ? 1 : 0
         data.power_output += metadata.power

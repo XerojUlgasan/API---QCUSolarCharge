@@ -1,4 +1,5 @@
-const { addDoc, serverTimestamp } = require("firebase/firestore")
+const { addDoc, serverTimestamp, collection } = require("firebase/firestore")
+const db = require("../utils/connectToFirebase")
 
 exports.postEnergy = async (req, res) => {
     const { deviceId, energy,  } = req.body
