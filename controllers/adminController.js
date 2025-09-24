@@ -1,4 +1,4 @@
-const { getDocs, collection, Timestamp, query, where, setDoc } = require("firebase/firestore")
+const { getDocs, collection, Timestamp, query, where, setDoc, doc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 
 const getDayRange = require("../utils/getFirstAndLastHourOfTheDay")
@@ -98,14 +98,13 @@ exports.getDashboard = async (req, res) => {
         data.revenue.total += metadata.amount
         data.uses.total += 1
 
-        data.transactions.push(metadata)
+        const transactionData = {
+            transaction_id: doc.id,
+            ...metadata
+        }
 
-        console.log("Transaction Date" + transactionDate)
+        data.transactions.push(transactionData)
     })
-    
-    console.log(startOfDay)
-    console.log(startOfWeek)
-    console.log(startOfMonth)
 
     res.json(data)
     return
@@ -206,13 +205,37 @@ exports.getDevices = async (req, res) => {
 }
 
 exports.updateReports = async (req, res) => {
-    if(req.query.problem_id){
-        await setDoc()
+    const reportId = req.query.problem_id
+    const statusUpdate = req.query.status_update
+
+    if(!reportId){
+        res.json({
+            message: "No problem ID included in query"
+        })
+        return
+    }
+    if(!statusUpdate){
+        res.json({
+            message: "No status update included in query"
+        })
+        return
+    }
+
+    if(reportId){
+        await setDoc(doc(db, "reports", reportId), {
+            status: statusUpdate
+        }, {merge: true})
+
+        res.json({
+            success: true
+        })
     }else{
         res.json({
             message: "No problem ID included in query"
         })
     }
+
+    return
 }
 
 exports.updateDevices = async (req, res) => {
