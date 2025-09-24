@@ -1,10 +1,10 @@
 const { addDoc, collection, serverTimestamp, getDocs, where, query, setDoc, doc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
+const getStationLocation = require("../utils/getStationLocation")
 
 exports.getRates = async (req, res) => {
     console.log("Attempting a GET request for /rates")
 
-    const deviceSnap = await getDocs(collection(db, "devices"))
     const colRef = collection(db, "ratings")
     const snap = await getDocs(colRef)
 
@@ -34,7 +34,8 @@ exports.getRates = async (req, res) => {
 
         res.json({
             ratings: ratingSet,
-            previous_rate: hasRated
+            previous_rate: hasRated,
+            station_locations: await getStationLocation()
         })
     }else{
         res.json([])            

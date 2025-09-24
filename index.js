@@ -11,6 +11,7 @@ const transactionRoute = require("./routes/transactionRoute")
 const overviewRoute = require("./routes/overviewRoute")
 const adminRoute = require("./routes/adminRoute")
 
+
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
@@ -35,6 +36,7 @@ app.use("/login", loginRoute) // /postLogin
 app.use("/transaction", transactionRoute) // /getTransactions, /postTransactions
 app.use("/overview", overviewRoute) // /getOverview
 app.use("/admin", adminRoute) // /dashboard /devices /updateReport
+app.use("/device", require("./routes/deviceRoute")) // /insertEnergy
 
 app.listen(config.PORT, () => {
     console.log("Listening to port " + config.PORT)
