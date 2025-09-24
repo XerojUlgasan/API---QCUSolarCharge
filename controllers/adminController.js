@@ -205,8 +205,8 @@ exports.getDevices = async (req, res) => {
 }
 
 exports.updateReports = async (req, res) => {
-    const reportId = req.query.problem_id
-    const statusUpdate = req.query.status_update
+    const reportId = req.body.problem_id
+    const statusUpdate = req.body.status_update
 
     if(!reportId){
         res.json({
@@ -221,23 +221,54 @@ exports.updateReports = async (req, res) => {
         return
     }
 
-    if(reportId){
+    try {
         await setDoc(doc(db, "reports", reportId), {
             status: statusUpdate
         }, {merge: true})
 
         res.json({
             success: true
-        })
-    }else{
+        })   
+    } catch (error) {
         res.json({
-            message: "No problem ID included in query"
-        })
+            success: false,
+            message: error.metadata
+        })  
     }
 
     return
 }
 
 exports.updateDevices = async (req, res) => {
+    const devId = req.body.device_id 
+    const devName = req.body.device_name
+    const devLoc = req.body.device_location
+    const devBuilding = req.body.device_building
+
+    if(!devId || !devName || !devLoc || !devBuilding){
+        res.json({
+            message: "Requires device_id, device_name, device_location, and device_building"
+        })
+        return
+    }
+
+    try {
+        await setDoc(doc(db, "devices", devId), {
+            name: devName,
+            location: devLoc,
+            building: devBuilding
+        }, {merge: true})   
+
+        res.json({
+            success: true
+        })   
+    } catch (e) {
+
+        console.log("Update Device Error")
+        res.json({
+            success: false,
+            message: e.message
+        })  
+    }
 
 }
