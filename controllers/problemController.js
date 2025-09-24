@@ -1,22 +1,47 @@
-const { serverTimestamp, getDocs, collection, addDoc } = require("firebase/firestore")
+const { serverTimestamp, getDocs, collection, addDoc, Transaction } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
+const { report } = require("../routes/rateRoutes")
 
 exports.getProblems = async (req, res) => {
     console.log("Attempting a GET request for /reports")
 
-    const snap = await getDocs(collection(db, "reports"))
+    try {
+        const reportSnap = await getDocs(collection(db, "reports"))
+        const stationSnap = await getDocs(collection(db, "devices"))
 
-    if(!snap.empty){
+        const data = {
+            reports: [],
+            stations: []
+        }
 
-        const problemSet = snap.docs.map(doc => ({
-            id:doc.id,
-            ...doc.data()
-        }))
-        
-        res.json(problemSet)
-    }else {
-        res.json([])
+        reportSnap.docs.forEach(doc => {
+            const metadata = doc.data()
+            data.reports.push({
+                transaction_id: doc.id,
+                ...metadata
+            })
+        })
+
+        stationSnap.docs.forEach(doc => {
+            const metadata = doc.data()
+            data.stations.push({
+                station_id: doc.id,
+                station_building: metadata.building || "",
+                station_location: metadata.location || ""
+            })
+        })
+
+        res.json({
+            success: true,
+            ...data
+        })        
+    } catch (e) {
+        res.json({
+            success: false,
+            message: e.message
+        })
     }
+
 }
 
 exports.setProblems = async (req, res) => {
