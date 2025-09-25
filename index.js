@@ -4,6 +4,8 @@ const express = require("express")
 const app = express()
 const cors = require("cors")
 
+const checkActiveDevice = require("./utils/checkActiveDevice")
+
 const rateRoute = require("./routes/rateRoutes")
 const reportProblemRoute = require("./routes/reportProblemRoute")
 const loginRoute = require("./routes/loginRoute")
@@ -19,8 +21,12 @@ app.use(express.urlencoded({extended: true}))
 
 //NOTE: put proper RESPOND STATUS!! <- study different respond status IMPORTANT
 
-//TODO: add "building" parameter in /postReports
-    // Identify different buildings and locations
+//TODO: ADD UPDATE DEVICE FOR UPDATING DEVICE DATA /device/update
+    //voltage
+    //temperature
+    //current
+    //energy
+    //power
 
 app.use("/rates", rateRoute) // /getRates, /postRates
 app.use("/report", reportProblemRoute) // /getReports, /postReports
@@ -31,6 +37,7 @@ app.use("/overview", overviewRoute) // /getOverview
 app.use("/admin", adminRoute) // /dashboard /devices /updateReport
 app.use("/device", deviceRoute) // /insertEnergy
 
-app.listen(config.PORT, () => {
+app.listen(config.PORT, async () => {
     console.log("Listening to port " + config.PORT)
+    setInterval(checkActiveDevice, 120000)
 })

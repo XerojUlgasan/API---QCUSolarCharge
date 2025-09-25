@@ -1,5 +1,6 @@
-const { addDoc, serverTimestamp, collection, query, getDocs, where } = require("firebase/firestore")
+const { addDoc, serverTimestamp, collection, query, getDocs, where, setDoc, doc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
+const { version } = require("env")
 
 exports.postEnergy = async (req, res) => {
     const { deviceId, energy, voltage, current, temperature} = req.body
@@ -72,6 +73,32 @@ exports.getDeviceHistory = async (req, res) => {
         return res.json(history)
     } catch (e) {
         console.error("Error fetching device history:", e)
+        return res.json({ message: e.message })
+    }
+}
+
+exports.addDevice = async (req, res) => {
+    const { device_id} = req.body
+
+    if (!device_id) {
+        return res.json({ message: "Missing device_id parameter" })
+    }
+
+    try {
+        await setDoc(doc(db, "devices", device_id), {
+            device_id: device_id,
+            status: "active",
+            date_added: serverTimestamp(),
+            last_updated: serverTimestamp(),
+            name: device_id,
+            location: "Not set",
+            building: "Not set",
+            version: "1.0"
+        })
+
+        return res.json({ message: "Device added successfully" })        
+    } catch (e) {
+        console.error("Error adding device:", e)
         return res.json({ message: e.message })
     }
 }
