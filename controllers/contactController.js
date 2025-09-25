@@ -11,6 +11,7 @@ exports.getContactUs = async (req, res) => {
             //     message,
             //     subject,
             //     timestamp
+            //     photo_url
             // }
         ];
         snapshot.docs.forEach(doc => {
@@ -33,7 +34,8 @@ exports.getContactUs = async (req, res) => {
 exports.postContactUs = async (req, res) => {
     const { from, 
             subject, 
-            message } = req.body;
+            message,
+            photo_url } = req.body;
 
     if (!from || !subject || !message) {
         return res.status(400).json({ error: "All fields are required." });
@@ -44,7 +46,8 @@ exports.postContactUs = async (req, res) => {
             from: from,
             subject: subject,
             message: message,
-            timestamp: new Date()
+            timestamp: new Date(),
+            photo_url: photo_url || null
         })   
 
         res.json({ message: "Message received. We'll get back to you shortly." });
