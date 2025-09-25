@@ -289,7 +289,7 @@ exports.updateDevices = async (req, res) => {
 
 }
 
-exports.sendResponse = async (req, res) => {
+exports.sendResponseReport = async (req, res) => {
 
     const {email, 
             device_id, 

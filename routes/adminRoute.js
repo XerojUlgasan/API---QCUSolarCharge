@@ -6,7 +6,7 @@ router.get("/dashboard", controller.getDashboard)
 router.get("/devices", controller.getDevices)
 router.post("/updateReport", controller.updateReports)
 router.post("/updateDevice", controller.updateDevices)
-router.post("/sendResponseReport", controller.sendResponse)
+router.post("/sendResponseReport", controller.sendResponseReport)
 router.post("/sendResponseContact", controller.sendResponseContact)
 
 module.exports = router
