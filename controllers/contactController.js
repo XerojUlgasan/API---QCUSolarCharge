@@ -1,0 +1,57 @@
+const { addDoc, collection, getDocs } = require("firebase/firestore");
+const db = require("../utils/connectToFirebase")
+
+exports.getContactUs = async (req, res) => {
+    try {
+        const snapshot = await getDocs(collection(db, "contactUs"));
+        const data = [
+            // {
+            //     id,
+            //     from,
+            //     message,
+            //     subject,
+            //     timestamp
+            // }
+        ];
+        snapshot.docs.forEach(doc => {
+            data.push({
+                id: doc.id, 
+                ...doc.data() 
+            });
+        })
+
+        res.json(data)
+
+    } catch (e) {
+        console.error("Error fetching documents:", e);
+        res.json({ message: "Internal server error." });
+    }
+
+    return
+}
+
+exports.postContactUs = async (req, res) => {
+    const { from, 
+            subject, 
+            message } = req.body;
+
+    if (!from || !subject || !message) {
+        return res.status(400).json({ error: "All fields are required." });
+    }
+
+    try {
+        await addDoc(collection(db, "contactUs"), {
+            from: from,
+            subject: subject,
+            message: message,
+            timestamp: new Date()
+        })   
+
+        res.json({ message: "Message received. We'll get back to you shortly." });
+    } catch (e) {
+        console.error("Error adding document:", e);
+        res.json({ message: "Internal server error." });
+    }
+
+    return
+}
