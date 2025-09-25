@@ -288,3 +288,57 @@ exports.updateDevices = async (req, res) => {
     }
 
 }
+
+exports.sendResponse = async (req, res) => {
+
+    const {email, 
+            device_id, 
+            response, 
+            building, 
+            location} = req.body
+
+    if(!email || !device_id || !response || !building || !location){
+        res.json({
+            message: "Requires email, device_id, response, building, and location"
+        })
+        return
+    }
+
+    const {sendEmail} = require("../utils/emailSender")
+
+    const subject = `Response to your report on device ${device_id}`
+    const text = `Dear User,
+
+We have received and reviewed your report regarding the device with the following details:
+
+- Device ID: ${device_id}
+- Building: ${building}
+- Location: ${location}
+
+Our response to your report:
+${response}
+
+If you continue to experience issues or have further concerns, please don’t hesitate to reply to this email or submit another report.
+
+Thank you for helping us improve our services.
+
+Sincerely,  
+QCU EcoCharge Support Team
+`;
+
+    try {
+        await sendEmail(email, subject, text)
+
+        res.json({
+            success: true,
+            message: "Response sent successfully"
+        })   
+    } catch (e) {
+        res.json({
+            success: false,
+            message: e.message
+        })
+    }
+
+    return
+}
