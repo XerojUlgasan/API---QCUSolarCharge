@@ -39,14 +39,14 @@ exports.getDeviceHistory = async (req, res) => {
             // }
         ],
         data: [
-            {
-                current,
-                energy_accumulated,
-                date_time,
-                device_id,
-                temperature,
-                voltage
-            }
+            // {
+            //     current,
+            //     energy_accumulated,
+            //     date_time,
+            //     device_id,
+            //     temperature,
+            //     voltage
+            // }
         ]
     }
 
