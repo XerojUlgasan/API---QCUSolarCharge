@@ -357,7 +357,8 @@ exports.sendResponseContact = async (req, res) => {
     try {
 
         await setDoc(doc(db, "contactUs", id), {
-            responded: true
+            responded: true,
+            hasRead: true
         }, {merge: true})
         
         await sendEmail(email, "Response to your inquiry", response)
