@@ -342,3 +342,33 @@ QCU EcoCharge Support Team
 
     return
 }
+
+exports.sendResponseContact = async (req, res) => {
+    const {email, response} = req.body
+    const {sendEmail} = require("../utils/emailSender")
+
+    if(!email || !response){
+        res.json({
+            message: "Requires email and response"
+        })
+        return
+    }
+
+    try {
+        
+        await sendEmail(email, "Response to your inquiry", response)
+
+        res.json({
+            success: true,
+            message: "Response sent successfully"
+        })
+
+    } catch (e) {
+        res.json({
+            success: false,
+            message: e.message
+        })
+    }
+
+    return
+}
