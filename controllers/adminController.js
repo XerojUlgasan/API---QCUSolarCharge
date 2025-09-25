@@ -344,17 +344,21 @@ QCU EcoCharge Support Team
 }
 
 exports.sendResponseContact = async (req, res) => {
-    const {email, response} = req.body
+    const {id, email, response} = req.body
     const {sendEmail} = require("../utils/emailSender")
 
-    if(!email || !response){
+    if(!email || !response || !id){
         res.json({
-            message: "Requires email and response"
+            message: "Requires email, response, and id"
         })
         return
     }
 
     try {
+
+        await setDoc(doc(db, "contactUs", id), {
+            responded: true
+        }, {merge: true})
         
         await sendEmail(email, "Response to your inquiry", response)
 

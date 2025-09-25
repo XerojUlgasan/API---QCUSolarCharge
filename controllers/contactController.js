@@ -47,7 +47,9 @@ exports.postContactUs = async (req, res) => {
             subject: subject,
             message: message,
             timestamp: new Date(),
-            photo_url: photo_url || null
+            photo_url: photo_url || null,
+            hasRead: false,
+            responded: false
         })   
 
         res.json({ message: "Message received. We'll get back to you shortly." });
