@@ -155,7 +155,7 @@ exports.getDevices = async (req, res) => {
         temperature: 0,
         percentage: 0,
         device_id: "",
-        alers: [],
+        alerts: [],
         energy_history: []
     }
 
@@ -219,7 +219,7 @@ exports.getDevices = async (req, res) => {
         data.alers.push(metadata)
     })
     const arr = await energyHist(deviceId)
-    
+
     data.energy_history.push(arr)
 
     res.json(data)
