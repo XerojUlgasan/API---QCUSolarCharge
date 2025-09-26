@@ -76,7 +76,7 @@ exports.getDashboard = async (req, res) => {
         }
 
         data.total_devices += 1
-        data.active_devices += (metadata.status === "active") ? 1 : 0
+        data.active_devices += (metadata.status.toLowerCase() === "active") ? 1 : 0
         data.power_output += metadata.power
         data.devices.push(device)
 
@@ -218,7 +218,7 @@ exports.getDevices = async (req, res) => {
         
         data.alerts.push(metadata)
     })
-    
+
     const arr = await energyHist(deviceId)
     data.energy_history.push(arr)
 
