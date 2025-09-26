@@ -51,7 +51,7 @@ exports.setProblems = async (req, res) => {
         location: req.body.location, //req
         type: req.body.type, //req
         urgencyLevel: req.body.urgencyLevel, // req
-        status: "Scheduled", //Scheduled (default), Investigating, Resolved
+        status: "For Review", //Investigating, Resolved
         dateTime: serverTimestamp(), 
         name: req.body.name, // req
         photo: req.body.photo_url || "" 

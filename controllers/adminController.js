@@ -154,7 +154,8 @@ exports.getDevices = async (req, res) => {
         power: 0,
         temperature: 0,
         percentage: 0,
-        device_id: ""
+        device_id: "",
+        alers: []
     }
 
     const deviceId = req.query.device_id
@@ -162,10 +163,12 @@ exports.getDevices = async (req, res) => {
     const deviceQuery = query(collection(db, "devices")) //  get by doc.id (QCU-001)
     const transactionQuery = query(collection(db, "transactions"),
                                     where("device_id", "==", deviceId))
+    const alertQuery = query(collection(db, "alerts"), where("device_id", "==", deviceId))
     // const maintenanceQuery =
 
     const deviceSnap = await getDocs(deviceQuery)
     const transactionSnap = await getDocs(transactionQuery)
+    const alertSnap = await getDocs(alertQuery)
     // const maintenanceSnap
 
     deviceSnap.docs.forEach((doc) => {
@@ -206,6 +209,12 @@ exports.getDevices = async (req, res) => {
         data.total_hours += ((metadata.amount * 10) / 60)
 
         data.transactions.push(metadata)
+    })
+
+    alertSnap.docs.forEach(doc => {
+        const metadata = doc.data()
+        
+        data.alers.push(metadata)
     })
 
     res.json(data)
