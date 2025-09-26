@@ -1,4 +1,4 @@
-const { getDocs, collection, Timestamp, query, where, setDoc, doc } = require("firebase/firestore")
+const { getDocs, collection, Timestamp, query, where, setDoc, doc, getDoc, addDoc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 
 const getDayRange = require("../utils/getFirstAndLastHourOfTheDay")
@@ -239,6 +239,16 @@ exports.updateReports = async (req, res) => {
     }
 
     try {
+
+        const reportDoc = await getDoc(doc(db, "reports", reportId))
+        const devId = reportDoc.data().location
+
+        const insertAlert = require("../utils/inserAlert")
+        const content = "A problem has been marked as " + statusUpdate
+        const threat = (statusUpdate === "Resolved") ? 0 : 1
+
+        await insertAlert(content, devId, threat)
+ 
         await setDoc(doc(db, "reports", reportId), {
             status: statusUpdate
         }, {merge: true})
@@ -249,7 +259,7 @@ exports.updateReports = async (req, res) => {
     } catch (error) {
         res.json({
             success: false,
-            message: error.metadata
+            message: error.message
         })  
     }
 
