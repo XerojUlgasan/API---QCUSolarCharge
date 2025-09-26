@@ -216,10 +216,10 @@ exports.getDevices = async (req, res) => {
     alertSnap.docs.forEach(doc => {
         const metadata = doc.data()
         
-        data.alers.push(metadata)
+        data.alerts.push(metadata)
     })
+    
     const arr = await energyHist(deviceId)
-
     data.energy_history.push(arr)
 
     res.json(data)
