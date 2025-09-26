@@ -34,21 +34,8 @@ exports.getDashboard = async (req, res) => {
             total: 0
         },
         transactions: [],
-        devices: [
-            // {
-            //     (SAMPLE DATA)
-            //     current: 0,
-            //     energy: 0,
-            //     power: 0,
-            //     volt: 0,
-            //     temperature: 0,
-            //     percentage: 0,
-            //     status: "", // active, inactive, maintenance
-            //     last_updated: 0,
-            //     location: "",
-            //     name: ""
-            // }
-        ],
+        devices: [],
+        energy_history: [],
         active_devices: 0,
         total_devices: 0,
         power_output: 0,
@@ -72,6 +59,11 @@ exports.getDashboard = async (req, res) => {
                 data.energy_generated.monthly += metadata.energy_accumulated
             }
         data.energy_generated.total += metadata.energy_accumulated
+        
+        data.energy_history.push({
+            id: doc.id,
+            ...metadata
+        })
     })
 
     devicesSnaphot.docs.forEach(docs => { // DEVICES
