@@ -155,7 +155,8 @@ exports.getDevices = async (req, res) => {
         temperature: 0,
         percentage: 0,
         device_id: "",
-        alers: []
+        alers: [],
+        energy_history: []
     }
 
     const deviceId = req.query.device_id
@@ -169,6 +170,7 @@ exports.getDevices = async (req, res) => {
     const deviceSnap = await getDocs(deviceQuery)
     const transactionSnap = await getDocs(transactionQuery)
     const alertSnap = await getDocs(alertQuery)
+    const energyHist = require("../utils/getDevicEnergyHistory")
     // const maintenanceSnap
 
     deviceSnap.docs.forEach((doc) => {
@@ -216,6 +218,9 @@ exports.getDevices = async (req, res) => {
         
         data.alers.push(metadata)
     })
+    const arr = await energyHist(deviceId)
+    
+    data.energy_history.push(arr)
 
     res.json(data)
     return

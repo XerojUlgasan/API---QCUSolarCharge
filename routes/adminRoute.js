@@ -9,4 +9,5 @@ router.post("/updateDevice", controller.updateDevices)
 router.post("/sendResponseReport", controller.sendResponseReport)
 router.post("/sendResponseContact", controller.sendResponseContact)
 
+
 module.exports = router
