@@ -39,5 +39,5 @@ app.use("/device", deviceRoute) // /insertEnergy
 
 app.listen(config.PORT, async () => {
     console.log("Listening to port " + config.PORT)
-    //setInterval(checkActiveDevice, 120000) //WATCHDOG 
+    //setInterval(checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
 })

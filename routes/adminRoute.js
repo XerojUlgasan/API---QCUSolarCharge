@@ -8,6 +8,8 @@ router.post("/updateReport", controller.updateReports)
 router.post("/updateDevice", controller.updateDevices)
 router.post("/sendResponseReport", controller.sendResponseReport)
 router.post("/sendResponseContact", controller.sendResponseContact)
+// router.post("/setDeviceEnabled")
+// router.post("/deleteDevice")
 
 
 module.exports = router
