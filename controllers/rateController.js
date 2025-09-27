@@ -1,29 +1,13 @@
 const { addDoc, collection, serverTimestamp, getDocs, where, query, setDoc, doc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 const getStationLocation = require("../utils/getStationLocation")
+const getEmailRating = require("../utils/getRatingOfEmail")
 
 exports.getRates = async (req, res) => {
     console.log("Attempting a GET request for /rates")
 
     const colRef = collection(db, "ratings")
     const snap = await getDocs(colRef)
-
-    let hasRated = {}
-
-    if(req.query.email){
-        const q = query(collection(db, "ratings"),
-                        where("email", "==", req.query.email))
-        const hasRatedSnap = await getDocs(q)
-
-        hasRatedSnap.docs.forEach(doc => {
-            const metadata = doc.data()
-            
-            hasRated = {
-                ...metadata,
-                rate_id: doc.id
-            }
-        })
-    }
 
     if(!snap.empty) {
         
@@ -34,7 +18,7 @@ exports.getRates = async (req, res) => {
 
         res.json({
             ratings: ratingSet,
-            previous_rate: hasRated,
+            previous_rate: await getEmailRating(req.query.email),
             station_locations: await getStationLocation()
         })
     }else{
