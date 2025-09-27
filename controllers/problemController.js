@@ -54,7 +54,8 @@ exports.setProblems = async (req, res) => {
         status: "For Review", //Investigating, Resolved
         dateTime: serverTimestamp(), 
         name: req.body.name, // req
-        photo: req.body.photo_url || "" 
+        photo: req.body.photo_url || "",
+        device_id: req.body.location
     }   
 
     const docRef = await addDoc(collection(db, collectionName), cleanData)

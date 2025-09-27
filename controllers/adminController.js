@@ -54,7 +54,7 @@ exports.updateReports = async (req, res) => {
             status: statusUpdate
         }, {merge: true})
 
-        return res.status(200)
+        return res.status(200).json({success: true})
     } catch (e) {
         return res.status(500).json({message: e.message})  
     }
@@ -98,7 +98,7 @@ exports.sendResponseReport = async (req, res) => {
     try {
         await require("../utils/reportResponseSender")(email, device_id, building, location, response)
 
-        return res.status(200).json({message: "Response Sent!"})
+        return res.status(200).json({success: true})
     } catch (e) {
         return res.status(500).json({message: e.message})
     }
@@ -121,8 +121,22 @@ exports.sendResponseContact = async (req, res) => {
         
         await sendEmail(email, "Response to your inquiry", response)
 
-        return res.status(200)
+        return res.status(200).json({success: true})
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
+}
 
+exports.deleteDevice = async (req, res) => {
+    const {device_id} = req.body
+
+    if(!device_id){
+        return res.status(400).json({message: "Requires device_id"})
+    }
+
+    try {
+        await require("../utils/deleteDeviceRecords")(device_id)
+        return res.status(200).json({success: true})
     } catch (e) {
         return res.status(500).json({message: e.message})
     }
