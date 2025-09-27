@@ -3,7 +3,7 @@ const router = express.Router()
 const controller = require("../controllers/deviceController")
 
 router.get("/getDeviceHistory", controller.getDeviceHistory)
-router.post("/insertEnergy", controller.postEnergy)
+router.post("/insertEnergy", controller.postEnergy) // per 1 hour
 router.post("/addDevice", controller.addDevice)
 router.post("/giveUpdates", controller.giveUpdates)
 
