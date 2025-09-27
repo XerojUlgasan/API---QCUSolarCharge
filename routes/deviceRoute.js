@@ -5,5 +5,6 @@ const controller = require("../controllers/deviceController")
 router.get("/getDeviceHistory", controller.getDeviceHistory)
 router.post("/insertEnergy", controller.postEnergy)
 router.post("/addDevice", controller.addDevice)
+router.post("/giveUpdates", controller.giveUpdates)
 
 module.exports = router
