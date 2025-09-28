@@ -45,7 +45,7 @@ exports.updateReports = async (req, res) => {
         const devId = reportDoc.data().location
 
         const insertAlert = require("../utils/inserAlert")
-        const content = "A problem has been marked as " + statusUpdate
+        const content = "A problem connected with this device has been marked as " + statusUpdate
         const threat = (statusUpdate === "Resolved") ? 0 : 1
 
         await insertAlert(content, devId, threat)
