@@ -163,6 +163,7 @@ exports.setDeviceConfig = async (req, res) => {
         "device_id", //req
         "device_alert_enabled", //opt
         "device_enabled", //opt
+        "emails", //opt
         "low_power", //opt
         "max_batt", //opt
         "max_temp", //opt
@@ -181,6 +182,7 @@ exports.setDeviceConfig = async (req, res) => {
 
     const data = require("../utils/filterObject")(keys, req.body)
     const device_id = req.body.device_id
+    data.emails = data.emails.split(",").map(email => email.trim());
 
     try {
         await require("../utils/insertDeviceConfig")(data, device_id)
