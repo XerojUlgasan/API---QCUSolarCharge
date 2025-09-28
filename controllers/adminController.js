@@ -143,6 +143,7 @@ exports.deleteDevice = async (req, res) => {
 }
 
 exports.getDeviceConfig = async (req, res) => {
+    console.log("Attempting to GET /deviceConfig")
     const device_id = req.query.device_id
 
     if(!device_id){
