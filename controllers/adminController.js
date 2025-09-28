@@ -1,4 +1,4 @@
-const {setDoc, doc, getDoc} = require("firebase/firestore")
+const {setDoc, doc, getDoc, DocumentReference} = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 
  
@@ -136,6 +136,53 @@ exports.deleteDevice = async (req, res) => {
 
     try {
         await require("../utils/deleteDeviceRecords")(device_id)
+        return res.status(200).json({success: true})
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
+}
+
+exports.getDeviceConfig = async (req, res) => {
+    const device_id = req.query.device_id
+
+    if(!device_id){
+        return res.status(400).json({message: "Requires device_id"})
+    }
+
+    try {
+        const data = await getDoc(doc(db, "deviceConfig", device_id))
+        return res.status(200).json(data.data())
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
+}
+
+exports.setDeviceConfig = async (req, res) => {
+    const keys = [
+        "device_id", //req
+        "device_alert_enabled", //opt
+        "device_enabled", //opt
+        "low_power", //opt
+        "max_batt", //opt
+        "max_temp", //opt
+        "max_volt", //opt
+        "min_batt", //opt
+        "min_temp", //opt
+        "min_volt", //opt
+        "minute_per_peso", //opt
+        "samples_per_hour", //opt
+        "update_gap_seconds" //opt
+    ]
+
+    if(!req.body.device_id){
+        return res.status(400).json({message: "Requires device_id"})
+    }
+
+    const data = require("../utils/filterObject")(keys, req.body)
+    const device_id = req.body.device_id
+
+    try {
+        await require("../utils/insertDeviceConfig")(data, device_id)
         return res.status(200).json({success: true})
     } catch (e) {
         return res.status(500).json({message: e.message})
