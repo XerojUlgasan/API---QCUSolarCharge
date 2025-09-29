@@ -167,10 +167,8 @@ exports.setDeviceConfig = async (req, res) => {
         "low_power", //opt
         "max_batt", //opt
         "max_temp", //opt
-        "max_volt", //opt
         "min_batt", //opt
         "min_temp", //opt
-        "min_volt", //opt
         "minute_per_peso", //opt
         "samples_per_hour", //opt
         "update_gap_seconds" //opt

@@ -5,6 +5,7 @@ const app = express()
 const cors = require("cors")
 
 const checkActiveDevice = require("./utils/checkActiveDevice")
+const checkDeviceAlert = require("./utils/checkDeviceAlerts")
 
 const rateRoute = require("./routes/rateRoutes")
 const reportProblemRoute = require("./routes/reportProblemRoute")
@@ -39,5 +40,10 @@ app.use("/device", deviceRoute) // /insertEnergy
 
 app.listen(config.PORT, async () => {
     console.log("Listening to port " + config.PORT)
-    //setInterval(checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
+
+    await checkActiveDevice()
+    await checkDeviceAlert()
+
+    setInterval(await checkDeviceAlert, 5000) //WATCHDOG FOR DEVICE ALERTS
+    setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
 })
