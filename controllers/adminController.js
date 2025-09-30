@@ -189,3 +189,12 @@ exports.setDeviceConfig = async (req, res) => {
         return res.status(500).json({message: e.message})
     }
 }
+
+exports.setAdminAccount = async (req, res) => {
+    const keys = [
+        "full_name",
+        "primary_email",
+        "backup_emai",
+
+    ]
+}

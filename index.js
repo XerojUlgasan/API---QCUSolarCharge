@@ -29,21 +29,25 @@ app.use(express.urlencoded({extended: true}))
     //energy
     //power
 
-app.use("/rates", rateRoute) // /getRates, /postRates
-app.use("/report", reportProblemRoute) // /getReports, /postReports
+app.use("/rates", rateRoute) 
+app.use("/report", reportProblemRoute) 
 app.use("/contact", contactUsRoute)
-app.use("/login", loginRoute) // /postLogin
-app.use("/transaction", transactionRoute) // /getTransactions, /postTransactions
-app.use("/overview", overviewRoute) // /getOverview
-app.use("/admin", adminRoute) // /dashboard /devices /updateReport
-app.use("/device", deviceRoute) // /insertEnergy
+app.use("/login", loginRoute) 
+app.use("/transaction", transactionRoute)
+app.use("/overview", overviewRoute) 
+app.use("/admin", adminRoute) 
+app.use("/device", deviceRoute)
 
 app.listen(config.PORT, async () => {
     console.log("Listening to port " + config.PORT)
 
-    await checkActiveDevice()
-    await checkDeviceAlert()
+    try {
+        await checkActiveDevice()   
+        await checkDeviceAlert()
 
-    setInterval(await checkDeviceAlert, 5000) //WATCHDOG FOR DEVICE ALERTS
-    setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
+        setInterval(await checkDeviceAlert, 5000) //WATCHDOG FOR DEVICE ALERTS
+        setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
+    } catch (e) {
+        console.log(e.message)
+    }
 })

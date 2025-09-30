@@ -14,4 +14,6 @@ router.delete("/deleteDevice", controller.deleteDevice)
 router.get("/getDeviceConfig", controller.getDeviceConfig)
 router.post("/setDeviceConfig", controller.setDeviceConfig)
 
+router.post("/setAdminAccount", controller.setAdminAccount)
+
 module.exports = router

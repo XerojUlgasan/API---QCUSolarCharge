@@ -13,7 +13,7 @@ async function checkActiveDevice() {
             const data = deviceSnap.data()
 
             if(data.status !== "maintenance") {
-                const last_update = data.last_updated.toDate()
+                const last_update = data.last_updated.toDate() || 0
                 const current_time = new Date()
 
                 const diffMs = current_time - last_update
