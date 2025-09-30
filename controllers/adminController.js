@@ -1,5 +1,6 @@
-const {setDoc, doc, getDoc, DocumentReference} = require("firebase/firestore")
+const {setDoc, doc, getDoc, DocumentReference, collection, getDocs} = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
+const { data } = require("react-router-dom")
 
  
  
@@ -215,5 +216,61 @@ exports.setAdminInformation = async (req, res) => {
         return res.status(200).json({success: true})
     } catch (e) {
         return res.status(500).json({message: e.message})   
+    }
+}
+
+exports.changeAdminPassword = async (req, res) => {
+    const keys = [
+        "current_password",
+        "new_password"
+    ]
+
+    const data = require("../utils/filterObject")(keys, req.body)
+
+    try {
+        let snap = await (await getDocs(collection(db, "superAdmin"))).docs[0]
+        let admin_account = snap.data()
+
+        if(admin_account.password === data.current_password){
+            delete admin_account.password
+            
+            await setDoc(doc(db, "superAdmin", snap.id), 
+                        { password: data.new_password}, 
+                        {merge: true})
+
+            return res.status(200).json({success: true})
+        }else{
+            return res.status(401).json({success: false})
+        }
+    } catch (e) {
+        return res.status(500).json({message: e.message})  
+    }
+}
+
+exports.changeAdminUsername = async (req, res) => {
+    const keys = [
+        "new_username",
+        "current_password"
+    ]
+
+    const data = require("../utils/filterObject")(keys, req.body)
+
+    try {
+        let snap = await (await getDocs(collection(db, "superAdmin"))).docs[0]
+        let admin_account = snap.data()
+
+        if(admin_account.password === data.current_password){
+            delete admin_account.password
+            
+            await setDoc(doc(db, "superAdmin", snap.id),
+                        {username: data.new_username},
+                        {merge: true})
+
+            return res.status(200).json({success: true})
+        }else{
+            return res.status(401).json({success: false})
+        }
+    } catch (e) {
+        return res.status(500).json({message: e.message})  
     }
 }

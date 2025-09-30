@@ -17,4 +17,7 @@ router.post("/setDeviceConfig", controller.setDeviceConfig)
 router.get("/getAdminInformation", controller.getAdminInformation)
 router.post("/setAdminInformation", controller.setAdminInformation)
 
+router.post("/changeAdminPassword", controller.changeAdminPassword)
+router.post("/changeAdminUsername", controller.changeAdminUsername)
+
 module.exports = router
