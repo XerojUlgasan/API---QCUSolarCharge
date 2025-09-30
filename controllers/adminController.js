@@ -190,11 +190,30 @@ exports.setDeviceConfig = async (req, res) => {
     }
 }
 
-exports.setAdminAccount = async (req, res) => {
+exports.getAdminInformation = async (req, res) => {
+    try {
+        const adminInfo = (await getDoc(doc(db, "superAdminDetails", "accountInformation"))).data()
+
+        return res.status(200).json(adminInfo)
+    } catch (e) {
+        return res.status(500).json({message: e.message})   
+    }
+}
+
+exports.setAdminInformation = async (req, res) => {
     const keys = [
         "full_name",
         "primary_email",
-        "backup_emai",
-
+        "backup_emai"
     ]
+
+    const data = require("../utils/filterObject")(keys, req.body)
+    
+    try {
+        await setDoc(doc(db, "superAdminDetails", "accountInformation"), data, {merge: true})
+
+        return res.status(200).json({success: true})
+    } catch (e) {
+        return res.status(500).json({message: e.message})   
+    }
 }

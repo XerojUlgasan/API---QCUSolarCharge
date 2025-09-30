@@ -42,11 +42,11 @@ app.listen(config.PORT, async () => {
     console.log("Listening to port " + config.PORT)
 
     try {
-        await checkActiveDevice()   
-        await checkDeviceAlert()
+        // await checkActiveDevice()   
+        // await checkDeviceAlert()
 
-        setInterval(await checkDeviceAlert, 5000) //WATCHDOG FOR DEVICE ALERTS
-        setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
+        // setInterval(await checkDeviceAlert, 5000) //WATCHDOG FOR DEVICE ALERTS
+        // setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
     } catch (e) {
         console.log(e.message)
     }

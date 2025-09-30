@@ -16,7 +16,7 @@ const checkAlert = async () => {
         const requiredGap = 3600000 //1 hour gap
 
         if(!config.device_alert_enabled || !config.device_enabled){
-            console.log(data.device_id + ": Device alert or the device it self is not enabled\n")
+            console.log(data.device_id + ": Device alert or the device it self is not enabled")
             return
         }
 
