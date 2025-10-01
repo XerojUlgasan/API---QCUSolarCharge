@@ -14,13 +14,14 @@ const sendEmail = async (to, subject, text) => {
   text: text
 }
 
-sgMail.send(msg)
-  .then(() => {
-    console.log('Email sent')
-  })
-  .catch((error) => {
-    console.error(error)
-  })
+  try {
+    await sgMail.send(msg)
+    
+    return true
+  } catch (e) {
+    console.log(e.message)
+    throw e
+  }
 }
 
 module.exports = {sendEmail};

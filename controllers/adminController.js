@@ -1,4 +1,4 @@
-const {setDoc, doc, getDoc, DocumentReference, collection, getDocs} = require("firebase/firestore")
+const {setDoc, doc, getDoc, DocumentReference, collection, getDocs, or, where, query} = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 const { data } = require("react-router-dom")
 
@@ -210,8 +210,14 @@ exports.setAdminInformation = async (req, res) => {
 
     const data = require("../utils/filterObject")(keys, req.body)
     
+    const updateObj = {}
+
+    if (data.full_name) updateObj.full_name = data.full_name;
+    if (data.primary_email) updateObj.primary_email = data.primary_email.toLowerCase();
+    if (data.backup_email) updateObj.backup_email = data.backup_email.toLowerCase(); 
+    
     try {
-        await setDoc(doc(db, "superAdminDetails", "accountInformation"), data, {merge: true})
+        await setDoc(doc(db, "superAdminDetails", "accountInformation"), updateObj, {merge: true})
 
         return res.status(200).json({success: true})
     } catch (e) {
@@ -273,4 +279,57 @@ exports.changeAdminUsername = async (req, res) => {
     } catch (e) {
         return res.status(500).json({message: e.message})  
     }
+}
+
+exports.sendOtp = async (req, res) => {
+    const keys = ["email"]
+    const {sendOTP} = require("../utils/OTPVerification")
+
+    const data = require("../utils/filterObject")(keys, req.body)
+
+    if(!data){
+        return res.status(400).json({message: "Invalid request"})
+    }
+
+    try {
+        const q = query(collection(db, "superAdminDetails"), 
+                        or(
+                            where("primary_email", "==", data.email.toLowerCase()),
+                            where("backup_email", "==", data.email.toLowerCase())
+                        ))
+        const userData = await getDocs(q)
+
+        if(userData.empty){
+            return res.status(200).json({success: false, message: "Invalid email"})    
+        }else {
+            const hasSent = await sendOTP(userData.full_name, data.email)
+            
+            return res.status(200).json({success: hasSent})
+        }
+    } catch (e) {
+        return res.status(500).json({message: e.message})  
+    }
+}
+
+exports.verifyOtp = async (req, res) => {
+    const key = [
+        "otp",
+        "email"
+    ]
+    const data = require("../utils/filterObject")(key, req.body)
+
+    if(!data){
+        return res.status(400).json({message: "Invalid request"})
+    }
+
+    const {verifyOTP} = require("../utils/OTPVerification")
+    
+    if(verifyOTP(data.otp, data.email)){
+        console.log("Accepted")
+        return res.status(200).json({success: true})
+    }else{
+        console.log("Rejected")
+        return res.status(200).json({success: false})
+    }
+
 }

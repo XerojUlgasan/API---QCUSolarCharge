@@ -34,8 +34,8 @@ app.use("/report", reportProblemRoute)
 app.use("/contact", contactUsRoute)
 app.use("/login", loginRoute) 
 app.use("/transaction", transactionRoute)
-app.use("/overview", overviewRoute) 
-app.use("/admin", adminRoute) 
+app.use("/overview", overviewRoute)
+app.use("/admin", adminRoute)
 app.use("/device", deviceRoute)
 
 app.listen(config.PORT, async () => {
