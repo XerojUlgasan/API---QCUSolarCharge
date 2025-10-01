@@ -323,12 +323,34 @@ exports.verifyOtp = async (req, res) => {
 
     const {verifyOTP} = require("../utils/OTPVerification")
     
-    if(verifyOTP(data.otp, data.email)){
+    if(verifyOTP(data.otp, data.email)){ // if the OTP is right
         console.log("Accepted")
         return res.status(200).json({success: true})
-    }else{
+    }else{ //If the OTP is wrong
         console.log("Rejected")
         return res.status(200).json({success: false})
     }
+}
 
+exports.changePassword = async (req, res) => {
+    const keys = [
+        "otp",
+        "email",
+        "new_password"
+    ]
+    const data = require("../utils/filterObject")(keys, req.body)
+
+    const {changePassword} = require("../utils/OTPVerification")
+
+    try {
+        const result = await changePassword(data.otp, data.new_password, data.email)
+
+        if(result){
+            return res.status(200).json({success: true})
+        }else{
+            return res.status(200).json({success: false})
+        }
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
 }

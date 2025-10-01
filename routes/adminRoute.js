@@ -22,5 +22,6 @@ router.post("/changeAdminUsername", controller.changeAdminUsername)
 
 router.post("/sendOtp", controller.sendOtp)
 router.post("/verifyOtp", controller.verifyOtp)
+router.post("/changePassword", controller.changePassword)
 
 module.exports = router

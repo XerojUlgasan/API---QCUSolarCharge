@@ -1,6 +1,8 @@
 const NodeCache = require("node-cache")
 const OTPCache = new NodeCache()
-const {sendEmail} = require("./emailSender")
+const {sendEmail} = require("./emailSender");
+const { setDoc, getDocs, collection, doc } = require("firebase/firestore");
+const db = require("./connectToFirebase")
 
 if (!OTPCache.get("OTPList")) {
   OTPCache.set("OTPList", { list: [] });
@@ -10,6 +12,9 @@ const sendOTP = async (full_name, email) => {
     const otp = require("../utils/generateRandomCharacter")(6)
 
     const OTPList = OTPCache.get("OTPList")
+    if (!OTPCache.get("OTPList")) {
+        OTPCache.set("OTPList", { list: [] });
+    }
 
     const subject = "Your OTP Code for Password Reset"
     const text = `Hello ${full_name},
@@ -35,7 +40,6 @@ QCU - EcoCharge Team`
         })
 
         OTPCache.set("OTPList", OTPList)
-        console.log(OTPCache.get("OTPList").list)
         return true
     }else{
         return false
@@ -56,9 +60,34 @@ const verifyOTP = (otp, email) => {
     if((curr - res.date_time) >= gapMillis){
         return false
     }else{
+        console.log(OTPList.list)
+        return true
+    }
+}
+
+const changePassword = async (otp, password, email) => {
+    const OTPList = OTPCache.get("OTPList")
+    if (!OTPList) return false
+    if(!otp || !email) return false
+
+    const res = OTPList.list.find(entry => entry.OTP === otp && 
+                                        entry.email === email.toLowerCase())
+
+    const curr = Date.now()
+    const gapMillis = 5 * 60 * 1000 // 5 mins
+
+    if((curr - res.date_time) >= gapMillis){
+        return false
+    }else{
+        let snap = (await getDocs(collection(db, "superAdmin"))).docs[0]
+
+        await setDoc(doc(db, "superAdmin", snap.id), 
+                    {password: password}, 
+                    {merge: true})
+
         OTPCache.flushAll()
         return true
     }
 }
 
-module.exports = {sendOTP, verifyOTP, OTPCache}
+module.exports = {sendOTP, verifyOTP, OTPCache, changePassword}
