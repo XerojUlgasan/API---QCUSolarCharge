@@ -1,6 +1,5 @@
 const {setDoc, doc, getDoc, DocumentReference, collection, getDocs, or, where, query} = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
-const { data } = require("react-router-dom")
 
  
  
