@@ -217,6 +217,8 @@ exports.setAdminInformation = async (req, res) => {
     
     try {
         await setDoc(doc(db, "superAdminDetails", "accountInformation"), updateObj, {merge: true})
+        await setDoc(doc(db, "superAdmin", await require("../utils/getFirstDocId")("superAdmin")),
+                    {email: updateObj.primary_email}, {merge: true})
 
         return res.status(200).json({success: true})
     } catch (e) {
@@ -296,7 +298,7 @@ exports.sendOtp = async (req, res) => {
                             where("primary_email", "==", data.email.toLowerCase()),
                             where("backup_email", "==", data.email.toLowerCase())
                         ))
-        const userData = await getDocs(q)
+        const userData = await (await getDocs(q)).docs[0].data()
 
         if(userData.empty){
             return res.status(200).json({success: false, message: "Invalid email"})    

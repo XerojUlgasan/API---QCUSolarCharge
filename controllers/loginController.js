@@ -1,4 +1,4 @@
-const { getDocs, collection, query, where} = require("firebase/firestore")
+const { getDocs, collection, query, where, or, and} = require("firebase/firestore")
 const jwt = require("jsonwebtoken")
 const db = require("../utils/connectToFirebase")
 
@@ -6,12 +6,22 @@ const db = require("../utils/connectToFirebase")
 exports.login = async (req, res) => {
     console.log("Attempting a POST request for /login")
 
-    //NOTE: ADD PROPER QUERY WHERE IT ONLY RETURN THE MATCHED SHIT
+    if(!req.body.username || !req.body.password){
+        return res.status(400).json({
+            success: false,
+            message: "Missing username or password"
+        })
+    }
 
     try {
         const q = query(collection(db, "superAdmin"),
-                            where("username", "==", req.body.username),
-                            where("password", "==", req.body.password))
+                            and(
+                                or(
+                                where("username", "==", req.body.username.toLowerCase()),
+                                where("email", "==", req.body.username.toLowerCase())
+                                ),
+                                where("password", "==", req.body.password)
+                            ))
 
         const superAdmin = await getDocs(q)
 
@@ -19,25 +29,24 @@ exports.login = async (req, res) => {
 
             const data = superAdmin.docs[0].data()
 
-            // INSERT JWT TOKEN
+            //Give Token
             const token = jwt.sign({username: req.body.username}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "7d"})
 
             // MUST RETURN "authorization: bearer <token>" when requesting
 
-            res.json({
+            res.status(200).json({
                 success: true,
                 token
             })
         }else {
-            res.json({
+            res.status(401).json({
                 success: false,
                 message: "Invalid Credentials"
             })
         }
     } catch (e) {
-        res.json({
+        res.status(500).json({
             success: false,
-            note: "Error catched",
             message: e.message
         })
     }
