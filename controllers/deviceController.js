@@ -6,7 +6,7 @@ exports.postEnergy = async (req, res) => {
     const { deviceId, energy, voltage, current, temperature} = req.body
 
     // Validate input
-    if (!deviceId || !energy || !voltage || !current || !temperature) {
+    if (deviceId == undefined || energy == undefined || voltage == undefined || current == undefined || temperature == undefined) {
         return res.status(400).json({ message: "Missing required fields" })
     }
 
@@ -106,7 +106,7 @@ exports.addDevice = async (req, res) => {
 exports.giveUpdates = async (req, res) => {
     const {voltage, current, energy, power, temperature, device_id} = req.body
 
-    if(!voltage || !current || !energy || !power || !temperature || !device_id){
+    if(voltage == undefined || current == undefined || energy == undefined || power == undefined || temperature == undefined || device_id == undefined){
         return res.status(400).json({message: "Missing required fields"})
     }
 
