@@ -7,7 +7,7 @@ exports.postEnergy = async (req, res) => {
 
     // Validate input
     if (!deviceId || !energy || !voltage || !current || !temperature) {
-        return res.json({ message: "Missing required fields" })
+        return res.status(400).json({ message: "Missing required fields" })
     }
 
     try {
@@ -107,7 +107,7 @@ exports.giveUpdates = async (req, res) => {
     const {voltage, current, energy, power, temperature, device_id} = req.body
 
     if(!voltage || !current || !energy || !power || !temperature || !device_id){
-        return res.json({message: "Missing required fields"})
+        return res.status(400).json({message: "Missing required fields"})
     }
 
     const data = {
