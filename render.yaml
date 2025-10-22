@@ -13,13 +13,13 @@ services:
         value: production
       - key: PORT
         value: 3000
-      - key: ACCESS_TOKEN_SECRET
-        value: 61a6ed91f17e8091e18c0dd04438dda12e26e04305b795bc1e852bced114b6cd6d15dea1fb74816e05852f22cc53aa9b4ad7e0151cf682d54d7358ded06432bc
-      - key: REFRESH_TOKEN_SECRET
-        value: 0b13e61a9ea008316f9703431300e22f1c38cf6a83119edcea805a5d743d62ca82efc6f63a445fb14d1174e5e5c0527f8abb96e2c6857d08f506a7172b94b7d4
-      - key: SENDGRID_API_KEY
-        value: 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
-      - key: SMTP_USER
-        value: qcuecocharge@gmail.com
-      - key: SMTP_PASS
-        value: fjmw cjaa wjha ftdt
+      # - key: ACCESS_TOKEN_SECRET
+      #   value: 61a6ed91f17e8091e18c0dd04438dda12e26e04305b795bc1e852bced114b6cd6d15dea1fb74816e05852f22cc53aa9b4ad7e0151cf682d54d7358ded06432bc
+      # - key: REFRESH_TOKEN_SECRET
+      #   value: 0b13e61a9ea008316f9703431300e22f1c38cf6a83119edcea805a5d743d62ca82efc6f63a445fb14d1174e5e5c0527f8abb96e2c6857d08f506a7172b94b7d4
+      # - key: SENDGRID_API_KEY
+      #   value: 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
+      # - key: SMTP_USER
+      #   value: qcuecocharge@gmail.com
+      # - key: SMTP_PASS
+      #   value: fjmw cjaa wjha ftdt
