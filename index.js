@@ -16,7 +16,7 @@
     const adminRoute = require("./routes/adminRoute")
     const deviceRoute = require("./routes/deviceRoute")
     const contactUsRoute = require("./routes/contactUsRoute");
-const { createServer } = require("http");
+    const { createServer } = require("http");
 
     app.use(cors())
     app.use(express.json())

@@ -64,7 +64,7 @@ const getDeviceDetails = async (deviceId) => {
             data.current = metadata.current
             data.power = metadata.power
             data.temperature = metadata.temperature
-            data.percentage = getStateOfCharge(metadata.battVolt)
+            data.percentage = getStateOfCharge(metadata.battVolt ?? 0)
         }
     })
 

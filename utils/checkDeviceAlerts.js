@@ -121,7 +121,7 @@ const constructData = (data) => {
     const constructedData = {
         device_id: data.device_id,
         temperature: data.temperature,
-        percentage: getStateOfCharge(data.volt)
+        percentage: getStateOfCharge(data.battVolt ?? 0)
     }
 
     return constructedData
