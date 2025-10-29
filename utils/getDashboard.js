@@ -43,6 +43,7 @@ const getAdminDashboard = async () => {
     const transactionSnapshot = await getDocs(collection(db, "transactions"))
 
     energyHistorySnapshot.docs.forEach(doc => { // ENERGY HISTORY
+        console.log("energy history")
         const metadata = doc.data()
         const recordDate = metadata.date_time.toDate()
 
@@ -64,6 +65,7 @@ const getAdminDashboard = async () => {
     })
 
     devicesSnaphot.docs.forEach(docs => { // DEVICES
+        console.log("devices")
         const metadata = docs.data()
 
         const device = {
@@ -71,16 +73,17 @@ const getAdminDashboard = async () => {
             device_id: docs.id,
             ...metadata
         }
-
+        console.log(docs.id)
         data.total_devices += 1
-        data.active_devices += (metadata.status.toLowerCase() === "active") ? 1 : 0
-        data.power_output += metadata.power
+        data.active_devices += (metadata?.status?.toLowerCase() === "active") ? 1 : 0
+        data.power_output += metadata?.power
         data.devices.push(device)
 
         //INSERT ENERGY GENERATED
     })
 
     transactionSnapshot.docs.forEach(doc => { //TRANSACTIONS
+        console.log("transaction")
         const metadata = doc.data()
 
         const transactionDate = metadata.date_time.toDate()
