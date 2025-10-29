@@ -1,4 +1,4 @@
-const { addDoc, serverTimestamp, collection, query, getDocs, where, setDoc, doc } = require("firebase/firestore")
+const { addDoc, serverTimestamp, collection, query, getDocs, where, setDoc, doc, getDoc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 const { version } = require("env")
 
@@ -122,4 +122,19 @@ exports.giveUpdates = async (req, res) => {
     await require("../utils/updateDocu")("devices", device_id, data)
 
     return res.status(200).json({success: true})
+}
+
+exports.checkExist = async (req, res) => {
+    const {device_id} = req.query
+    
+    if(device_id == undefined) {
+        return res.status(400)
+    }
+
+    try {
+        const result = await getDoc(doc(db, "devices", device_id))
+        return res.status(200).json({doExist: result.exists()})   
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
 }
