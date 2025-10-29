@@ -5,6 +5,7 @@ const db = require("../utils/connectToFirebase")
  
 exports.getDashboard = async (req, res) => {
     try {
+        console.log("Attempting to get admin dashboard")
         const dashboardData = await require("../utils/getDashboard")()
 
         return res.status(200).json(dashboardData)
@@ -22,10 +23,12 @@ exports.getDevices = async (req, res) => {
     }
 
     try {
+        console.log("attempting to get Devices")
         const data = await require("../utils/getDevices")(req.query.device_id)
 
         return res.status(200).json(data)
     } catch (e) {
+        console.log(e.message)
         return res.status(500).json({message: e.message})
     }
 }
@@ -40,7 +43,7 @@ exports.updateReports = async (req, res) => {
     }
 
     try {
-
+        console.log("Attempting to update reports")
         const reportDoc = await getDoc(doc(db, "reports", reportId))
         const devId = reportDoc.data().location
 
@@ -71,6 +74,7 @@ exports.updateDevices = async (req, res) => {
     }
 
     try {
+        console.log("Attempting to update a device")
         await setDoc(doc(db, "devices", devId), {
             name: devName,
             location: devLoc,
@@ -96,6 +100,7 @@ exports.sendResponseReport = async (req, res) => {
     }
 
     try {
+        console.log("Attempting to send report respose")
         await require("../utils/reportResponseSender")(email, device_id, building, location, response)
 
         return res.status(200).json({success: true})
@@ -113,7 +118,7 @@ exports.sendResponseContact = async (req, res) => {
     }
 
     try {
-
+        console.log("Attempting to send contact respose")
         await setDoc(doc(db, "contactUs", id), {
             responded: true,
             hasRead: true
@@ -135,6 +140,7 @@ exports.deleteDevice = async (req, res) => {
     }
 
     try {
+        console.log("Attempting to delete a device")
         await require("../utils/deleteDeviceRecords")(device_id)
         return res.status(200).json({success: true})
     } catch (e) {
@@ -151,6 +157,7 @@ exports.getDeviceConfig = async (req, res) => {
     }
 
     try {
+        console.log("Attempting to get config")
         const data = await getDoc(doc(db, "deviceConfig", device_id))
         return res.status(200).json(data.data())
     } catch (e) {
@@ -183,6 +190,7 @@ exports.setDeviceConfig = async (req, res) => {
     data.emails = data.emails.split(",").map(email => email.trim());
 
     try {
+        console.log("Attempting to set config")
         await require("../utils/insertDeviceConfig")(data, device_id)
         return res.status(200).json({success: true})
     } catch (e) {
@@ -192,6 +200,7 @@ exports.setDeviceConfig = async (req, res) => {
 
 exports.getAdminInformation = async (req, res) => {
     try {
+        console.log("Attempting to get admin info")
         const adminInfo = (await getDoc(doc(db, "superAdminDetails", "accountInformation"))).data()
 
         return res.status(200).json(adminInfo)
@@ -216,6 +225,7 @@ exports.setAdminInformation = async (req, res) => {
     if (data.backup_email) updateObj.backup_email = data.backup_email.toLowerCase(); 
     
     try {
+        console.log("Attempting to set admin info")
         await setDoc(doc(db, "superAdminDetails", "accountInformation"), updateObj, {merge: true})
         await setDoc(doc(db, "superAdmin", await require("../utils/getFirstDocId")("superAdmin")),
                     {email: updateObj.primary_email}, {merge: true})
@@ -235,6 +245,7 @@ exports.changeAdminPassword = async (req, res) => {
     const data = require("../utils/filterObject")(keys, req.body)
 
     try {
+        console.log("Attempting to change admin pass")
         let snap = await (await getDocs(collection(db, "superAdmin"))).docs[0]
         let admin_account = snap.data()
 
@@ -263,6 +274,7 @@ exports.changeAdminUsername = async (req, res) => {
     const data = require("../utils/filterObject")(keys, req.body)
 
     try {
+        console.log("Attempting to change admin username")
         let snap = await (await getDocs(collection(db, "superAdmin"))).docs[0]
         let admin_account = snap.data()
 
@@ -293,6 +305,7 @@ exports.sendOtp = async (req, res) => {
     }
 
     try {
+        console.log("Attempting to send otp")
         const userData = await getDoc(doc(db, "superAdminDetails"))
 
         if(userData.empty){
@@ -318,6 +331,7 @@ exports.verifyOtp = async (req, res) => {
         return res.status(400).json({message: "Invalid request"})
     }
 
+    console.log("Attempting to verify otp")
     const {verifyOTP} = require("../utils/OTPVerification")
     
     if(verifyOTP(data.otp, data.email)){ // if the OTP is right
@@ -340,6 +354,7 @@ exports.changePassword = async (req, res) => {
     const {changePassword} = require("../utils/OTPVerification")
 
     try {
+        console.log("Attempting to change admin password")
         const result = await changePassword(data.otp, data.new_password, data.email)
 
         if(result){

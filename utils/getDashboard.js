@@ -67,7 +67,7 @@ const getAdminDashboard = async () => {
         const metadata = docs.data()
 
         const device = {
-            percentage: getStateOfCharge(metadata.volt),
+            percentage: getStateOfCharge(metadata.battVolt),
             device_id: docs.id,
             ...metadata
         }
