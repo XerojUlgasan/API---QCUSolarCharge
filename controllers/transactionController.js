@@ -22,7 +22,6 @@ exports.getTransactions = async (req, res) => { // RETURN ALL TRANSACTIONS OR RE
             res.json([])
         }
 
-
     }else {
         //RETRIEVE ALL TRANSACTIONS
         const snapshot = await getDocs(collection(db, "transactions"))

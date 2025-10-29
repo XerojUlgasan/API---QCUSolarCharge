@@ -293,12 +293,7 @@ exports.sendOtp = async (req, res) => {
     }
 
     try {
-        const q = query(collection(db, "superAdminDetails"), 
-                        or(
-                            where("primary_email", "==", data.email.toLowerCase()),
-                            where("backup_email", "==", data.email.toLowerCase())
-                        ))
-        const userData = await (await getDocs(q)).docs[0].data()
+        const userData = await getDoc(doc(db, "superAdminDetails"))
 
         if(userData.empty){
             return res.status(200).json({success: false, message: "Invalid email"})    
@@ -308,7 +303,7 @@ exports.sendOtp = async (req, res) => {
             return res.status(200).json({success: hasSent})
         }
     } catch (e) {
-        return res.status(500).json({message: e.message})  
+        return res.status(500).json({message: e.message, error: true})  
     }
 }
 

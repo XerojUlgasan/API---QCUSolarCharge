@@ -104,9 +104,9 @@ exports.addDevice = async (req, res) => {
 }
 
 exports.giveUpdates = async (req, res) => {
-    const {voltage, current, energy, power, temperature, device_id} = req.body
+    const {voltage, current, energy, power, temperature, device_id, battVolt} = req.body
 
-    if(voltage == undefined || current == undefined || energy == undefined || power == undefined || temperature == undefined || device_id == undefined){
+    if(voltage == undefined || current == undefined || energy == undefined || power == undefined || temperature == undefined || device_id == undefined || battVolt == undefined){
         return res.status(400).json({message: "Missing required fields"})
     }
 
@@ -115,7 +115,8 @@ exports.giveUpdates = async (req, res) => {
         current: current,
         energy: energy,
         power: power,
-        temperature: temperature
+        temperature: temperature,
+        battVolt: battVolt
     }
 
     await require("../utils/updateDocu")("devices", device_id, data)

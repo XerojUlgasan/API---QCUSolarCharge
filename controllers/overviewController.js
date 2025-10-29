@@ -23,7 +23,7 @@ exports.getOverview = async (req, res) => {
                 overviewData.total_power += Number(data.power || 0)
                 overviewData.devices.push({
                     id: d.id,
-                    percentage: getStateOfCharge(data.volt),
+                    percentage: getStateOfCharge(data.battVolt),
                     ...data
                 })
             })
