@@ -7,4 +7,5 @@ router.post("/insertEnergy", controller.postEnergy) // per 1 hour
 router.post("/addDevice", controller.addDevice)
 router.post("/giveUpdates", controller.giveUpdates)
 
+
 module.exports = router

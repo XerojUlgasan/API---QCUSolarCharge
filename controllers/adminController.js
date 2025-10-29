@@ -5,7 +5,7 @@ const db = require("../utils/connectToFirebase")
  
 exports.getDashboard = async (req, res) => {
     try {
-        console.log("Attempting to get admin dashboard")
+        console.log("Attempting to get admin dashboard.")
         const dashboardData = await require("../utils/getDashboard")()
 
         return res.status(200).json(dashboardData)
