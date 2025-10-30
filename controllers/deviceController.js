@@ -157,3 +157,26 @@ exports.checkExist = async (req, res) => {
         return res.status(500).json({message: e.message})
     }
 }
+
+exports.getConfig = async (req, res) => {
+    const {device_id} = req.body
+    const defaultConfig = require("../utils/defaultConfig")
+
+    if(device_id == undefined){
+        return res.status(400).json({message: "device_id is undefined"})
+    }
+    
+    if(await checkDevice(device_id)){
+        const snapshot = await getDoc(doc(db, "deviceConfig", device_id))
+        
+        if(snapshot.exists()){
+            const data = snapshot.data()
+
+            return res.status(200).json(data)
+        }else{
+            return res.status(200).json(defaultConfig)
+        }
+    }else{
+        return res.status(400).json({message: "Device Not Exist"})
+    }
+}
