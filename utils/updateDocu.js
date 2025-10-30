@@ -5,7 +5,7 @@ const db = require("./connectToFirebase")
 const updateDocu = async (path, docuId, data) => {
     await setDoc(doc(db, path, docuId), {
         ...data,
-        date_time: serverTimestamp()
+        last_updated: serverTimestamp()
     }, {merge: true})
 
     return
