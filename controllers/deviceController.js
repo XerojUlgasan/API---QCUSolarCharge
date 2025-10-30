@@ -1,6 +1,7 @@
 const { addDoc, serverTimestamp, collection, query, getDocs, where, setDoc, doc, getDoc } = require("firebase/firestore")
 const db = require("../utils/connectToFirebase")
 const { version } = require("env")
+const checkDevice = require("../utils/checkDeviceExist")
 
 exports.postEnergy = async (req, res) => {
     const { deviceId, energy, voltage, current, temperature} = req.body
@@ -11,19 +12,25 @@ exports.postEnergy = async (req, res) => {
     }
 
     try {
-        await addDoc(collection(db, "energyHistory"), {
-            device_id: deviceId,
-            energy_accumulated: energy,
-            date_time: serverTimestamp(),
-            voltage: voltage,
-            current: current,
-            temperature: temperature
-        })
-        
-        return res.json({ message: "Energy data inserted successfully" })
+        if(await checkDevice(deviceId)){
+            await addDoc(collection(db, "energyHistory"), {
+                device_id: deviceId,
+                energy_accumulated: energy,
+                date_time: serverTimestamp(),
+                voltage: voltage,
+                current: current,
+                temperature: temperature
+            })
+            return res.status(200).json({message: "Energy data inserted successfully"})
+        }else{
+            return res.status(400).json({
+                success: true,
+                message: "Device Not Exist"
+            })
+        }
     } catch (e) {
         console.error("Error inserting energy data:", e)
-        return res.json({ message: e.message })
+        return res.status(500).json({ message: e.message })
     }
 
 }
@@ -85,6 +92,7 @@ exports.addDevice = async (req, res) => {
     }
 
     try {
+
         await setDoc(doc(db, "devices", device_id), {
             device_id: device_id,
             status: "active",
@@ -119,9 +127,20 @@ exports.giveUpdates = async (req, res) => {
         battVolt: battVolt
     }
 
-    await require("../utils/updateDocu")("devices", device_id, data)
-
-    return res.status(200).json({success: true})
+    try {
+        if(await checkDevice(device_id)){
+            await require("../utils/updateDocu")("devices", device_id, data)
+            return res.status(200).json({success: true})
+        }else{
+            return res.status(400).json({
+                message: "Device Not Exist"
+            })
+        }
+    } catch (e) {
+        return res.status(500).json({
+            message: e.message
+        })
+    }
 }
 
 exports.checkExist = async (req, res) => {
@@ -132,8 +151,8 @@ exports.checkExist = async (req, res) => {
     }
 
     try {
-        const result = await getDoc(doc(db, "devices", device_id))
-        return res.status(200).json({doExist: result.exists()})   
+        const result = await checkDevice(device_id)
+        return res.status(200).json({doExist: result})   
     } catch (e) {
         return res.status(500).json({message: e.message})
     }

@@ -75,7 +75,7 @@ const getAdminDashboard = async () => {
         }
         console.log(docs.id)
         data.total_devices += 1
-        data.active_devices += (metadata?.status?.toLowerCase() === "active") ? 1 : 0
+        data.active_devices += (metadata.status?.toLowerCase() === "active") ? 1 : 0
         data.power_output += metadata?.power
         data.devices.push(device)
 
