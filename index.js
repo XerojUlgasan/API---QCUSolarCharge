@@ -16,6 +16,7 @@
     const adminRoute = require("./routes/adminRoute")
     const deviceRoute = require("./routes/deviceRoute")
     const contactUsRoute = require("./routes/contactUsRoute");
+    const userRoute = require("./routes/userRoute")
     const { createServer } = require("http");
 
     app.use(cors())
@@ -34,6 +35,7 @@
     app.use("/rates", rateRoute) 
     app.use("/report", reportProblemRoute) 
     app.use("/contact", contactUsRoute)
+    app.use("/user", userRoute)
     app.use("/login", loginRoute) 
     app.use("/transaction", transactionRoute)
     app.use("/overview", overviewRoute)

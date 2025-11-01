@@ -7,7 +7,7 @@ const defaultConfig = {
   min_temp: 20,
   minute_per_peso: 5,
   samples_per_hour: 60,
-  update_gap_seconds: 3
+  update_gap_seconds: 10
 }
 
 
