@@ -200,7 +200,13 @@ exports.getAdminInformation = async (req, res) => {
         console.log("Attempting to get admin info")
         const adminInfo = (await getDoc(doc(db, "superAdminDetails", "accountInformation"))).data()
 
-        return res.status(200).json(adminInfo)
+        const details = {
+            primary_email: adminInfo.primary_email,
+            backup_email: adminInfo.backup_email,
+            full_name: adminInfo.full_name
+        }
+
+        return res.status(200).json(details)
     } catch (e) {
         return res.status(500).json({message: e.message})   
     }
@@ -210,7 +216,7 @@ exports.setAdminInformation = async (req, res) => {
     const keys = [
         "full_name",
         "primary_email",
-        "backup_emai"
+        "backup_email"
     ]
 
     const data = require("../utils/filterObject")(keys, req.body)
@@ -223,9 +229,13 @@ exports.setAdminInformation = async (req, res) => {
     
     try {
         console.log("Attempting to set admin info")
-        await setDoc(doc(db, "superAdminDetails", "accountInformation"), updateObj, {merge: true})
+        // await setDoc(doc(db, "superAdminDetails", "accountInformation"), updateObj, {merge: true})
         await setDoc(doc(db, "superAdmin", await require("../utils/getFirstDocId")("superAdmin")),
-                    {email: updateObj.primary_email}, {merge: true})
+                    {
+                        email: updateObj.primary_email,
+                        backup_email: updateObj.backup_email,
+                        full_name: updateObj.full_name
+                    }, {merge: true})
 
         return res.status(200).json({success: true})
     } catch (e) {
