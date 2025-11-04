@@ -25,15 +25,18 @@
     app.use(express.json())
     app.use(express.urlencoded({extended: true}))
 
-    app.use("/rates", rateRoute) 
-    app.use("/report", reportProblemRoute) 
-    app.use("/contact", contactUsRoute)
-    app.use("/user", userRoute)
     app.use("/login", loginRoute) 
     app.use("/transaction", transactionRoute)
     app.use("/overview", overviewRoute)
     app.use("/admin", adminRoute)
     app.use("/device", deviceRoute)
+    app.use("/user", userRoute)
+
+    
+
+    app.use("/rates", rateRoute) 
+    app.use("/report", reportProblemRoute) 
+    app.use("/contact", contactUsRoute)
 
     const server = createServer(app);
     const io = initializeSocket(server)
