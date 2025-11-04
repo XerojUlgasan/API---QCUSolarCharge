@@ -43,7 +43,7 @@
 
     server.listen(config.PORT, async () => {
         console.log("Listening to port " + config.PORT)
-        console.log("https://localhost:" + config.PORT)
+        console.log("http://localhost:" + config.PORT)
 
         try {
             initializeListeners(io)

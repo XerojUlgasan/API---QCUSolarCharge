@@ -30,7 +30,7 @@ exports.login = async (req, res) => {
             const data = superAdmin.docs[0].data()
 
             //Give Token
-            const token = jwt.sign({username: req.body.username}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "1d"})
+            const token = jwt.sign({username: req.body.username}, process.env.JWT_SECRET_TOKEN, {expiresIn: "1d"})
 
             // MUST RETURN "authorization: bearer <token>" when requesting
             res.status(200).json({

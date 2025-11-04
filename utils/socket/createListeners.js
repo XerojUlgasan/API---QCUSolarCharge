@@ -17,7 +17,7 @@ const initializeListeners = (io) => {
 }
 
 const createListener = (colName, io) => {
-    console.log("Listening to devices")
+    console.log("Listening to : " + colName)
 
     let isFirstSnapshot = true;
 
@@ -25,7 +25,7 @@ const createListener = (colName, io) => {
 
         if (isFirstSnapshot) {
             isFirstSnapshot = false
-            console.log("Initial snapshot received, now listening for changes...")
+            // console.log("Initial snapshot received, now listening for changes...")
             return
         }
 
