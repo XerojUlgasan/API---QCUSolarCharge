@@ -18,19 +18,12 @@
     const contactUsRoute = require("./routes/contactUsRoute");
     const userRoute = require("./routes/userRoute")
     const { createServer } = require("http");
+    const initializeSocket = require("./utils/socket/initializeSocket");
+    const initializeListeners = require("./utils/socket/createListeners");
 
     app.use(cors())
     app.use(express.json())
     app.use(express.urlencoded({extended: true}))
-
-    //NOTE: put proper RESPOND STATUS!! <- study different respond status IMPORTANT
-
-    //TODO: ADD UPDATE DEVICE FOR UPDATING DEVICE DATA /device/update
-        //voltage
-        //temperature
-        //current
-        //energy
-        //power
 
     app.use("/rates", rateRoute) 
     app.use("/report", reportProblemRoute) 
@@ -43,16 +36,15 @@
     app.use("/device", deviceRoute)
 
     const server = createServer(app);
-    const io = new Server(server);
+    const io = initializeSocket(server)
 
     server.listen(config.PORT, async () => {
         console.log("Listening to port " + config.PORT)
+        console.log("https://localhost:" + config.PORT)
 
         try {
+            initializeListeners(io)
             // await checkActiveDevice()   
-            // await checkDeviceAlert()
-
-            // setInterval(await checkDeviceAlert, 5000) //WATCHDOG FOR DEVICE ALERTS
             // setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
         } catch (e) {
             console.log(e.message)

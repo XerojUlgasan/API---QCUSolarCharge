@@ -14,10 +14,11 @@
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
+    "dotenv": "^17.2.3",
     "env": "^0.0.2",
     "express": "^5.1.0",
     "firebase": "^12.2.1",
+    "firebase-admin": "^13.5.0",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "node-cache": "^5.1.2",
