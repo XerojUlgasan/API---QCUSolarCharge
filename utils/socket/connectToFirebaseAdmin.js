@@ -1,7 +1,7 @@
 var admin = require("firebase-admin");
-
-var serviceAccount = require("../../serviceAccount.json");
+require("dotenv").config()
 const { getFirestore } = require("firebase-admin/firestore");
+
 
 admin.initializeApp({
   credential: admin.credential.cert({
