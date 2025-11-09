@@ -198,7 +198,7 @@ exports.setDeviceConfig = async (req, res) => {
 exports.getAdminInformation = async (req, res) => {
     try {
         console.log("Attempting to get admin info")
-        const adminInfo = (await getDoc(doc(db, "superAdminDetails", "accountInformation"))).data()
+        const adminInfo = (await getDoc(doc(db, "superAdmin", await require("../utils/getFirstDocId")("superAdmin")))).data()
 
         const details = {
             primary_email: adminInfo.primary_email,
