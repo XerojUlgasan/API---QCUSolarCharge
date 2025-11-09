@@ -201,7 +201,7 @@ exports.getAdminInformation = async (req, res) => {
         const adminInfo = (await getDoc(doc(db, "superAdmin", await require("../utils/getFirstDocId")("superAdmin")))).data()
 
         const details = {
-            primary_email: adminInfo.primary_email,
+            primary_email: adminInfo.email,
             backup_email: adminInfo.backup_email,
             full_name: adminInfo.full_name
         }
