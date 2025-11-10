@@ -63,7 +63,8 @@ exports.setRates = async (req, res) => {
         location: req.body.location,
         rate: req.body.rate,
         comment: req.body.comment,
-        photo: req.body.photo_url || ""
+        photo: req.body.photo_url || "",
+        user_id: req.body.user_id
     }
 
     try {

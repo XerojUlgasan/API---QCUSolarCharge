@@ -35,7 +35,8 @@ exports.postContactUs = async (req, res) => {
     const { from, 
             subject, 
             message,
-            photo_url } = req.body;
+            photo_url,
+            user_id } = req.body;
 
     if (!from || !subject || !message) {
         return res.status(400).json({ error: "All fields are required." });
@@ -49,7 +50,8 @@ exports.postContactUs = async (req, res) => {
             timestamp: new Date(),
             photo_url: photo_url || null,
             hasRead: false,
-            responded: false
+            responded: false,
+            user_id: user_id
         })   
 
         res.json({ message: "Message received. We'll get back to you shortly." });

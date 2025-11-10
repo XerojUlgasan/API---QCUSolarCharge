@@ -55,7 +55,8 @@ exports.setProblems = async (req, res) => {
         dateTime: serverTimestamp(), 
         name: req.body.name, // req
         photo: req.body.photo_url || "",
-        device_id: req.body.location
+        device_id: req.body.location,
+        user_id: req.body.user_id
     }   
 
     const docRef = await addDoc(collection(db, collectionName), cleanData)
