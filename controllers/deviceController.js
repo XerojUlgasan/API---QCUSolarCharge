@@ -2,6 +2,7 @@ const { addDoc, serverTimestamp, collection, query, getDocs, where, setDoc, doc,
 const db = require("../utils/connectToFirebase")
 const { version } = require("env")
 const checkDevice = require("../utils/checkDeviceExist")
+const { admin_db } = require("../utils/socket/connectToFirebaseAdmin")
 
 exports.postEnergy = async (req, res) => {
     const { deviceId, energy, voltage, current, temperature} = req.body
@@ -179,4 +180,36 @@ exports.getConfig = async (req, res) => {
     }else{
         return res.status(400).json({message: "Device Not Exist"})
     }
+}
+
+exports.setEnability = async (req, res) => {
+    const {deviceId, isEnabled} = req.body
+
+    if(deviceId === undefined || isEnabled === undefined) {
+        console.log("invalid")
+        return res.status(400).json({
+            message: "Invalid Input"
+        })
+    }
+
+    try {
+        if(checkDevice(deviceId)){
+            const result = await admin_db.collection("deviceConfig").doc(deviceId).set({
+                device_enabled: isEnabled
+            }, {merge: true})
+
+            return res.status(200).json({
+                success: true
+            })
+        }else {
+            return res.status(401).json({
+                message: "Device does not exists"
+            })
+        }        
+    } catch (error) {
+        console.log("Error occured : " + error.message)
+        return res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }   
 }

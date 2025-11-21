@@ -19,7 +19,7 @@
     const userRoute = require("./routes/userRoute")
     const { createServer } = require("http");
     const initializeSocket = require("./utils/socket/initializeSocket");
-    const initializeListeners = require("./utils/socket/createListeners");
+    const {initializeListeners, deviceConfListener} = require("./utils/socket/createListeners");
 
     app.use(cors())
     app.use(express.json())
@@ -47,6 +47,7 @@
 
         try {
             initializeListeners(io)
+            deviceConfListener(io)
             // await checkActiveDevice()   
             // setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
         } catch (e) {

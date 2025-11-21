@@ -8,5 +8,6 @@ router.post("/addDevice", controller.addDevice)
 router.post("/giveUpdates", controller.giveUpdates)
 router.get("/checkExist", controller.checkExist)
 router.post("/getConfig", controller.getConfig)
+router.post("/setEnability", controller.setEnability)
 
 module.exports = router
