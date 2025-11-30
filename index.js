@@ -48,8 +48,8 @@
         try {
             initializeListeners(io)
             deviceConfListener(io)
-            // await checkActiveDevice()   
-            // setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
+            await checkActiveDevice()   
+            setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
         } catch (e) {
             console.log(e.message)
         }
