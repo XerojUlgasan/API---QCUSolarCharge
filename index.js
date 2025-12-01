@@ -49,7 +49,7 @@
             initializeListeners(io)
             deviceConfListener(io)
             await checkActiveDevice()   
-            setInterval(await checkActiveDevice, 120000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
+            setInterval(await checkActiveDevice, 5000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
         } catch (e) {
             console.log(e.message)
         }

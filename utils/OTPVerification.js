@@ -1,5 +1,6 @@
 const NodeCache = require("node-cache")
 const OTPCache = new NodeCache()
+const bcrypt = require("bcrypt")
 const {sendEmail} = require("./emailSender");
 const { setDoc, getDocs, collection, doc } = require("firebase/firestore");
 const db = require("./connectToFirebase")
@@ -73,6 +74,8 @@ const changePassword = async (otp, password, email) => {
     const res = OTPList.list.find(entry => entry.OTP === otp && 
                                         entry.email === email.toLowerCase())
 
+    if(!res) return false
+
     const curr = Date.now()
     const gapMillis = 5 * 60 * 1000 // 5 mins
 
@@ -81,8 +84,11 @@ const changePassword = async (otp, password, email) => {
     }else{
         let snap = (await getDocs(collection(db, "superAdmin"))).docs[0]
 
+        // Hash the new password before saving
+        const hashedPassword = await bcrypt.hash(password, 10)
+
         await setDoc(doc(db, "superAdmin", snap.id), 
-                    {password: password}, 
+                    {password: hashedPassword}, 
                     {merge: true})
 
         OTPCache.flushAll()

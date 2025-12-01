@@ -1,4 +1,5 @@
 const {setDoc, doc, getDoc, DocumentReference, collection, getDocs, or, where, query} = require("firebase/firestore")
+const bcrypt = require("bcrypt")
 const db = require("../utils/connectToFirebase")
 
  
@@ -256,16 +257,20 @@ exports.changeAdminPassword = async (req, res) => {
         let snap = await (await getDocs(collection(db, "superAdmin"))).docs[0]
         let admin_account = snap.data()
 
-        if(admin_account.password === data.current_password){
-            delete admin_account.password
+        // Verify current password using bcrypt
+        const isPasswordValid = await bcrypt.compare(data.current_password, admin_account.password)
+
+        if(isPasswordValid){
+            // Hash new password before saving
+            const hashedPassword = await bcrypt.hash(data.new_password, 10)
             
             await setDoc(doc(db, "superAdmin", snap.id), 
-                        { password: data.new_password}, 
+                        { password: hashedPassword}, 
                         {merge: true})
 
             return res.status(200).json({success: true})
         }else{
-            return res.status(401).json({success: false})
+            return res.status(401).json({success: false, message: "Invalid current password"})
         }
     } catch (e) {
         return res.status(500).json({message: e.message})  
@@ -285,16 +290,17 @@ exports.changeAdminUsername = async (req, res) => {
         let snap = await (await getDocs(collection(db, "superAdmin"))).docs[0]
         let admin_account = snap.data()
 
-        if(admin_account.password === data.current_password){
-            delete admin_account.password
-            
+        // Verify current password using bcrypt
+        const isPasswordValid = await bcrypt.compare(data.current_password, admin_account.password)
+
+        if(isPasswordValid){
             await setDoc(doc(db, "superAdmin", snap.id),
                         {username: data.new_username},
                         {merge: true})
 
             return res.status(200).json({success: true})
         }else{
-            return res.status(401).json({success: false})
+            return res.status(401).json({success: false, message: "Invalid password"})
         }
     } catch (e) {
         return res.status(500).json({message: e.message})  
