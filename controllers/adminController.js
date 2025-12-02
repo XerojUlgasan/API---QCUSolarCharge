@@ -1,9 +1,6 @@
-const {setDoc, doc, getDoc, DocumentReference, collection, getDocs, or, where, query} = require("firebase/firestore")
+const pool = require("../utils/supabase/supabasedb")
 const bcrypt = require("bcrypt")
-const db = require("../utils/connectToFirebase")
 
- 
- 
 exports.getDashboard = async (req, res) => {
     try {
         console.log("Attempting to get admin dashboard.")
@@ -11,7 +8,8 @@ exports.getDashboard = async (req, res) => {
 
         return res.status(200).json(dashboardData)
     } catch (e) {
-        return res.status(500)        
+        console.error("Error getting dashboard:", e)
+        return res.status(500).json({ message: e.message })
     }
 } 
 
@@ -39,27 +37,33 @@ exports.updateReports = async (req, res) => {
     const statusUpdate = req.body.status_update
 
     if(!reportId || !statusUpdate){
-        res.status(400).json({message: "Requires reportId and statusUpdate"})
-        return
+        return res.status(400).json({message: "Requires reportId and statusUpdate"})
     }
 
     try {
         console.log("Attempting to update reports")
-        const reportDoc = await getDoc(doc(db, "reports", reportId))
-        const devId = reportDoc.data().location
+        
+        // Get the device_id from the report
+        const reportResult = await pool.query(
+            'SELECT device_id FROM tbl_reports WHERE report_id = $1',
+            [reportId]
+        )
 
-        const insertAlert = require("../utils/inserAlert")
-        const content = "A problem connected with this device has been marked as " + statusUpdate
-        const threat = (statusUpdate === "Resolved") ? 0 : 1
+        if(reportResult.rows.length === 0){
+            return res.status(404).json({message: "Report not found"})
+        }
 
-        await insertAlert(content, devId, threat)
+        const devId = reportResult.rows[0].device_id
  
-        await setDoc(doc(db, "reports", reportId), {
-            status: statusUpdate
-        }, {merge: true})
+        // Update report status
+        await pool.query(
+            'UPDATE tbl_reports SET status = $1 WHERE report_id = $2',
+            [statusUpdate, reportId]
+        )
 
         return res.status(200).json({success: true})
     } catch (e) {
+        console.error("Error updating reports:", e)
         return res.status(500).json({message: e.message})  
     }
 }
@@ -76,14 +80,14 @@ exports.updateDevices = async (req, res) => {
 
     try {
         console.log("Attempting to update a device")
-        await setDoc(doc(db, "devices", devId), {
-            name: devName,
-            location: devLoc,
-            building: devBuilding
-        }, {merge: true})   
+        await pool.query(
+            'UPDATE tbl_devices SET name = $1, location = $2, building = $3 WHERE device_id = $4',
+            [devName, devLoc, devBuilding, devId]
+        )
 
         return res.status(200).json({success: true})   
     } catch (e) {
+        console.error("Error updating device:", e)
         return res.status(500).json({message: e.message})  
     }
 }
@@ -119,16 +123,19 @@ exports.sendResponseContact = async (req, res) => {
     }
 
     try {
-        console.log("Attempting to send contact respose")
-        await setDoc(doc(db, "contactUs", id), {
-            responded: true,
-            hasRead: true
-        }, {merge: true})
+        console.log("Attempting to send contact response")
+        
+        // Update contact as read and responded
+        await pool.query(
+            'UPDATE tbl_contacts SET responded = true, "hasRead" = true WHERE contact_id = $1',
+            [id]
+        )
         
         await sendEmail(email, "Response to your inquiry", response)
 
         return res.status(200).json({success: true})
     } catch (e) {
+        console.error("Error sending contact response:", e)
         return res.status(500).json({message: e.message})
     }
 }
@@ -159,9 +166,30 @@ exports.getDeviceConfig = async (req, res) => {
 
     try {
         console.log("Attempting to get config")
-        const data = await getDoc(doc(db, "deviceConfig", device_id))
-        return res.status(200).json(data.data())
+        const result = await pool.query(
+            'SELECT * FROM tbl_deviceconfig WHERE device_id = $1',
+            [device_id]
+        )
+        
+        if(result.rows.length > 0){
+            return res.status(200).json(result.rows[0])
+        } else {
+            // Return default config values
+            const defaultConfig = {
+                device_id: device_id,
+                device_enabled: true,
+                max_batt: 100,
+                min_batt: 50,
+                max_temp: 40,
+                min_temp: 20,
+                minute_per_peso: 5,
+                samples_per_hour: 60,
+                update_gap_seconds: 5
+            }
+            return res.status(200).json(defaultConfig)
+        }
     } catch (e) {
+        console.error("Error getting device config:", e)
         return res.status(500).json({message: e.message})
     }
 }
@@ -199,8 +227,13 @@ exports.setDeviceConfig = async (req, res) => {
 exports.getAdminInformation = async (req, res) => {
     try {
         console.log("Attempting to get admin info")
-        const adminInfo = (await getDoc(doc(db, "superAdmin", await require("../utils/getFirstDocId")("superAdmin")))).data()
+        const result = await pool.query('SELECT email, backup_email, full_name FROM tbl_admin LIMIT 1')
+        
+        if(result.rows.length === 0){
+            return res.status(404).json({message: "Admin not found"})
+        }
 
+        const adminInfo = result.rows[0]
         const details = {
             primary_email: adminInfo.email,
             backup_email: adminInfo.backup_email,
@@ -209,6 +242,7 @@ exports.getAdminInformation = async (req, res) => {
 
         return res.status(200).json(details)
     } catch (e) {
+        console.error("Error getting admin info:", e)
         return res.status(500).json({message: e.message})   
     }
 }
@@ -222,24 +256,37 @@ exports.setAdminInformation = async (req, res) => {
 
     const data = require("../utils/filterObject")(keys, req.body)
     
-    const updateObj = {}
+    const updateFields = []
+    const updateValues = []
+    let paramCount = 1
 
-    if (data.full_name) updateObj.full_name = data.full_name;
-    if (data.primary_email) updateObj.primary_email = data.primary_email.toLowerCase();
-    if (data.backup_email) updateObj.backup_email = data.backup_email.toLowerCase(); 
+    if (data.full_name) {
+        updateFields.push(`full_name = $${paramCount++}`)
+        updateValues.push(data.full_name)
+    }
+    if (data.primary_email) {
+        updateFields.push(`email = $${paramCount++}`)
+        updateValues.push(data.primary_email.toLowerCase())
+    }
+    if (data.backup_email) {
+        updateFields.push(`backup_email = $${paramCount++}`)
+        updateValues.push(data.backup_email.toLowerCase())
+    }
+
+    if (updateFields.length === 0) {
+        return res.status(400).json({message: "No fields to update"})
+    }
     
     try {
         console.log("Attempting to set admin info")
-        // await setDoc(doc(db, "superAdminDetails", "accountInformation"), updateObj, {merge: true})
-        await setDoc(doc(db, "superAdmin", await require("../utils/getFirstDocId")("superAdmin")),
-                    {
-                        email: updateObj.primary_email,
-                        backup_email: updateObj.backup_email,
-                        full_name: updateObj.full_name
-                    }, {merge: true})
+        await pool.query(
+            `UPDATE tbl_admin SET ${updateFields.join(', ')} WHERE admin_id = (SELECT admin_id FROM tbl_admin LIMIT 1)`,
+            updateValues
+        )
 
         return res.status(200).json({success: true})
     } catch (e) {
+        console.error("Error setting admin info:", e)
         return res.status(500).json({message: e.message})   
     }
 }
@@ -254,8 +301,13 @@ exports.changeAdminPassword = async (req, res) => {
 
     try {
         console.log("Attempting to change admin pass")
-        let snap = await (await getDocs(collection(db, "superAdmin"))).docs[0]
-        let admin_account = snap.data()
+        const result = await pool.query('SELECT admin_id, password FROM tbl_admin LIMIT 1')
+        
+        if(result.rows.length === 0){
+            return res.status(404).json({message: "Admin not found"})
+        }
+
+        const admin_account = result.rows[0]
 
         // Verify current password using bcrypt
         const isPasswordValid = await bcrypt.compare(data.current_password, admin_account.password)
@@ -264,15 +316,17 @@ exports.changeAdminPassword = async (req, res) => {
             // Hash new password before saving
             const hashedPassword = await bcrypt.hash(data.new_password, 10)
             
-            await setDoc(doc(db, "superAdmin", snap.id), 
-                        { password: hashedPassword}, 
-                        {merge: true})
+            await pool.query(
+                'UPDATE tbl_admin SET password = $1 WHERE admin_id = $2',
+                [hashedPassword, admin_account.admin_id]
+            )
 
             return res.status(200).json({success: true})
         }else{
             return res.status(401).json({success: false, message: "Invalid current password"})
         }
     } catch (e) {
+        console.error("Error changing password:", e)
         return res.status(500).json({message: e.message})  
     }
 }
@@ -287,22 +341,29 @@ exports.changeAdminUsername = async (req, res) => {
 
     try {
         console.log("Attempting to change admin username")
-        let snap = await (await getDocs(collection(db, "superAdmin"))).docs[0]
-        let admin_account = snap.data()
+        const result = await pool.query('SELECT admin_id, password FROM tbl_admin LIMIT 1')
+        
+        if(result.rows.length === 0){
+            return res.status(404).json({message: "Admin not found"})
+        }
+
+        const admin_account = result.rows[0]
 
         // Verify current password using bcrypt
         const isPasswordValid = await bcrypt.compare(data.current_password, admin_account.password)
 
         if(isPasswordValid){
-            await setDoc(doc(db, "superAdmin", snap.id),
-                        {username: data.new_username},
-                        {merge: true})
+            await pool.query(
+                'UPDATE tbl_admin SET username = $1 WHERE admin_id = $2',
+                [data.new_username, admin_account.admin_id]
+            )
 
             return res.status(200).json({success: true})
         }else{
             return res.status(401).json({success: false, message: "Invalid password"})
         }
     } catch (e) {
+        console.error("Error changing username:", e)
         return res.status(500).json({message: e.message})  
     }
 }
@@ -313,22 +374,26 @@ exports.sendOtp = async (req, res) => {
 
     const data = require("../utils/filterObject")(keys, req.body)
 
-    if(!data){
+    if(!data || !data.email){
         return res.status(400).json({message: "Invalid request"})
     }
 
     try {
         console.log("Attempting to send otp")
-        const userData = await getDoc(doc(db, "superAdminDetails"))
+        const result = await pool.query(
+            'SELECT email, full_name FROM tbl_admin WHERE email = $1 OR backup_email = $1',
+            [data.email.toLowerCase()]
+        )
 
-        if(userData.empty){
+        if(result.rows.length === 0){
             return res.status(200).json({success: false, message: "Invalid email"})    
-        }else {
-            const hasSent = await sendOTP(userData.full_name, data.email)
+        } else {
+            const hasSent = await sendOTP(result.rows[0].full_name, data.email)
             
             return res.status(200).json({success: hasSent})
         }
     } catch (e) {
+        console.error("Error sending OTP:", e)
         return res.status(500).json({message: e.message, error: true})  
     }
 }

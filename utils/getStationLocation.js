@@ -1,19 +1,20 @@
-const { getDocs, collection } = require("firebase/firestore")
-const db = require("../utils/connectToFirebase")
+const pool = require("./supabase/supabasedb")
 
 async function getStationLocation(){
-    let station_locations = []
+    try {
+        const result = await pool.query(
+            'SELECT device_id, location, building FROM tbl_devices ORDER BY device_id'
+        )
 
-    const deviceSnap = await getDocs(collection(db, "devices"))
-    deviceSnap.forEach(doc => {
-        const metadata = doc.data()
-        station_locations.push({
-            location: metadata.location,
-            building: metadata.building,
-            device_id: doc.id
-        })
-    })
-    return station_locations
+        return result.rows.map(device => ({
+            location: device.location,
+            building: device.building,
+            device_id: device.device_id
+        }))
+    } catch (e) {
+        console.error("Error getting station locations:", e)
+        return []
+    }
 }
 
 module.exports = getStationLocation

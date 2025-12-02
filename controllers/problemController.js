@@ -1,69 +1,53 @@
-const { serverTimestamp, getDocs, collection, addDoc, Transaction } = require("firebase/firestore")
-const db = require("../utils/connectToFirebase")
-const { report } = require("../routes/rateRoutes")
-
+const pool = require("../utils/supabase/supabasedb")
 const getStationLocations = require("../utils/getStationLocation")
 
 exports.getProblems = async (req, res) => {
     console.log("Attempting a GET request for /reports")
 
     try {
-        const reportSnap = await getDocs(collection(db, "reports"))
+        const { rows: reports } = await pool.query('SELECT * FROM tbl_reports ORDER BY "dateTime" DESC')
 
-        const data = {
-            reports: [],
-            stations: await getStationLocations()
-        }
-
-        reportSnap.docs.forEach(doc => {
-            const metadata = doc.data()
-            data.reports.push({
-                transaction_id: doc.id,
-                ...metadata
-            })
-        })
+        // Map report_id to id for each report
+        const reportsWithId = reports.map(report => ({
+            ...report,
+            id: report.report_id,
+            location: report.device_id
+        }))
 
         res.json({
             success: true,
-            ...data
+            reports: reportsWithId,
+            stations: await getStationLocations()
         })        
     } catch (e) {
-        res.json({
+        res.status(500).json({
             success: false,
             message: e.message
         })
     }
-    return
 }
 
 exports.setProblems = async (req, res) => {
-
     console.log("Attempting a POST request for /reports")
 
-    const collectionName = "reports"
+    const { description, email, type, urgencyLevel, name, photo_url, location, user_id } = req.body
+    console.log(req.body)
+    if (!email || !type || !urgencyLevel || !name || !location || !user_id) {
+        return res.status(400).json({
+            success: false,
+            message: "Missing required fields"
+        })
+    }
 
-    // NOTE: PUT VALIDATION AND PROPER DATA CLEANING
-    // check if blank or not
+    try {
+        await pool.query(
+            `INSERT INTO tbl_reports (report_id, device_id, user_id, "dateTime", name, email, description, type, status, "urgencyLevel", photo) 
+             VALUES (gen_random_uuid()::text, $1, $2, NOW(), $3, $4, $5, $6, $7, $8, $9)`,
+            [location, user_id, name, email, description || "", type, "For Review", urgencyLevel, photo_url || ""]
+        )
 
-    const cleanData = {
-        description: req.body.description || "",
-        email: req.body.email, //req
-        location: req.body.location, //req
-        type: req.body.type, //req
-        urgencyLevel: req.body.urgencyLevel, // req
-        status: "For Review", //Investigating, Resolved
-        dateTime: serverTimestamp(), 
-        name: req.body.name, // req
-        photo: req.body.photo_url || "",
-        device_id: req.body.location,
-        user_id: req.body.user_id
-    }   
-
-    const docRef = await addDoc(collection(db, collectionName), cleanData)
-    .then(() => {
-        res.json({success: true})
-    })
-    .catch((e) => {
-        res.json({success: false, message: e})
-    })
+        res.json({ success: true })
+    } catch (e) {
+        res.status(500).json({ success: false, message: e.message })
+    }
 }

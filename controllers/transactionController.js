@@ -1,64 +1,44 @@
-const { getDocs, collection, query, where, serverTimestamp, addDoc } = require("firebase/firestore")
-const db = require("../utils/connectToFirebase")
+const pool = require("../utils/supabase/supabasedb")
 
-exports.getTransactions = async (req, res) => { // RETURN ALL TRANSACTIONS OR RETURN TRANSACTION TO A SPECIFIC DEVICE
-    
+exports.getTransactions = async (req, res) => {
     console.log("Attempting a GET request for /transactions")
     
-    if(req.query.device_id){ //RETRIEVE SPECIFIC DEVICES ONLY
-        const q = query(collection(db, "transactions"),
-                        where("device_id", "==", req.query.device_id))
-
-        const snapshot = await getDocs(q)
-
-        if(!snapshot.empty){
-            const arr = snapshot.docs.map((doc) => ({
-                transaction_id: doc.id,
-                ...doc.data()
-            }))
-
-            res.json(arr)
+    try {
+        if(req.query.device_id){
+            // Retrieve transactions for specific device
+            const { rows } = await pool.query(
+                'SELECT * FROM tbl_sessions WHERE device_id = $1 ORDER BY date_time DESC',
+                [req.query.device_id]
+            )
+            res.json(rows)
         }else {
-            res.json([])
+            // Retrieve all transactions
+            const { rows } = await pool.query('SELECT * FROM tbl_sessions ORDER BY date_time DESC')
+            res.json(rows)
         }
-
-    }else {
-        //RETRIEVE ALL TRANSACTIONS
-        const snapshot = await getDocs(collection(db, "transactions"))
-
-        if(!snapshot.empty){
-            const arr = snapshot.docs.map((doc) => ({
-                transaction_id: doc.id,
-                ...doc.data()
-            }))
-
-            res.json(arr)
-        }else {
-            res.json([])
-        }
+    } catch (e) {
+        res.status(500).json({ success: false, message: e.message })
     }
 }
 
 exports.setTransaction = async (req, res) => {
-
     console.log("Attempting a POST request for /transactions")
     
-    const data = {
-        amount: req.body.amount,
-        device_id: req.body.device_id,
-        date_time: serverTimestamp()
+    const { amount, device_id } = req.body
+
+    if(!amount || !device_id){
+        return res.status(400).json({ success: false, message: "Amount and device_id are required" })
     }
 
     try {
-        const docRef = await addDoc(collection(db, "transactions"), data);
+        await pool.query(
+            `INSERT INTO tbl_sessions (transaction_id, device_id, date_time, amount) 
+             VALUES (gen_random_uuid()::text, $1, NOW(), $2)`,
+            [device_id, amount]
+        )
         
-        res.json({
-            success: true
-        })
+        res.json({ success: true })
     } catch (e) {
-        res.json({
-            success: false,
-            message: e.message
-        })
+        res.status(500).json({ success: false, message: e.message })
     }
 }

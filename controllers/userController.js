@@ -1,26 +1,21 @@
-const { setDoc, doc, serverTimestamp } = require("firebase/firestore")
-const db = require("../utils/connectToFirebase")
+const pool = require("../utils/supabase/supabasedb")
 
 exports.recordLogin = async (req, res) => {
     const {user_id, email, full_name} = req.body
 
-    if (
-    user_id === undefined ||
-    email === undefined ||
-    full_name === undefined
-    ) {
+    if (!user_id || !email || !full_name) {
         return res.status(400).json({message: "Invalid parameters"})
     }
 
     try {
-        const data = {
-            user_id: user_id,
-            email: email,
-            full_name: full_name,
-            last_login: serverTimestamp()
-        }
+        await pool.query(
+            `INSERT INTO tbl_users (user_id, email, full_name, last_login) 
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (user_id) 
+             DO UPDATE SET email = $2, full_name = $3, last_login = NOW()`,
+            [user_id, email, full_name]
+        )
 
-        await setDoc(doc(db, "users", user_id), data, {merge: true})
         return res.status(200).json({message: "Log Successful"})
     } catch (e) {
         return res.status(500).json({message: e.message})
@@ -30,18 +25,17 @@ exports.recordLogin = async (req, res) => {
 exports.recordLogout = async (req, res) => {
     const {user_id} = req.body
 
-    if ( user_id === undefined) {
+    if (!user_id) {
         return res.status(400).json({message: "Invalid parameters"})
     }
 
     try {
-        const data = {
-            user_id: user_id,
-            last_logout: serverTimestamp()
-        }
+        await pool.query(
+            `UPDATE tbl_users SET last_logout = NOW() WHERE user_id = $1`,
+            [user_id]
+        )
 
-        await setDoc(doc(db, "users", user_id), data, {merge: true})
-        return res.status(200).json({message: "Log Successful"})
+        return res.status(200).json({message: "Logout Successful"})
     } catch (e) {
         return res.status(500).json({message: e.message})
     }

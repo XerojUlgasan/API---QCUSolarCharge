@@ -1,6 +1,4 @@
-const { query, collection, where, getDocs } = require("firebase/firestore")
-const db = require("./connectToFirebase")
-
+const pool = require("./supabase/supabasedb")
 const getDayRange = require("../utils/getFirstAndLastHourOfTheDay")
 const getWeekRange = require("../utils/getFirstAndLastHourOfTheWeek")
 const getMonthRange = require("../utils/getFirstAndLastHourOfTheMonth") 
@@ -11,7 +9,7 @@ const {startOfWeek, endOfWeek} = getWeekRange()
 const {startOfMonth, endOfMonth} = getMonthRange()   
 
 const getDeviceDetails = async (deviceId) => {
-        const data = {
+    const data = {
         revenue: {
             daily: 0,
             weekly: 0,
@@ -24,14 +22,14 @@ const getDeviceDetails = async (deviceId) => {
             monthly: 0,
             total: 0
         },
-        energy: { // standby
+        energy: {
             daily: 0,
             weekly: 0,
             monthly: 0,
             total: 0
         },
         transactions: [],
-        maintenance: [], //standby
+        maintenance: [],
         total_hours: 0,
         volt: 0,
         current: 0,
@@ -43,65 +41,84 @@ const getDeviceDetails = async (deviceId) => {
         energy_history: []
     }
 
-    const deviceQuery = query(collection(db, "devices")) //  get by doc.id (QCU-001)
-    const transactionQuery = query(collection(db, "transactions"),
-                                    where("device_id", "==", deviceId))
-    const alertQuery = query(collection(db, "alerts"), where("device_id", "==", deviceId))
-    // const maintenanceQuery =
+    // Get device with its data
+    const deviceResult = await pool.query(`
+        SELECT 
+            d.device_id,
+            d.name,
+            d.building,
+            d.location,
+            d.date_added,
+            dd.volt,
+            dd.current,
+            dd.energy,
+            dd.power,
+            dd."battVolt",
+            dd.temperature,
+            dd.last_updated
+        FROM tbl_devices d
+        LEFT JOIN tbl_devicesdata dd ON d.device_id = dd.device_id
+        WHERE d.device_id = $1
+    `, [deviceId])
 
-    const deviceSnap = await getDocs(deviceQuery)
-    const transactionSnap = await getDocs(transactionQuery)
-    const alertSnap = await getDocs(alertQuery)
-    const energyHist = require("../utils/getDevicEnergyHistory")
-    // const maintenanceSnap
+    if(deviceResult.rows.length > 0){
+        const device = deviceResult.rows[0]
+        data.device_id = device.device_id
+        data.volt = Number(device.volt || 0)
+        data.current = Number(device.current || 0)
+        data.power = Number(device.power || 0)
+        data.temperature = Number(device.temperature || 0)
+        data.percentage = getStateOfCharge(device.battVolt ?? 0)
+    }
 
-    deviceSnap.docs.forEach((doc) => {
-        if(doc.id === deviceId){
-            const metadata = doc.data()
+    // Get transactions for this device
+    const transactionResult = await pool.query(
+        'SELECT * FROM tbl_sessions WHERE device_id = $1 ORDER BY date_time DESC',
+        [deviceId]
+    )
 
-            data.device_id = doc.id
-            data.volt = metadata.volt
-            data.current = metadata.current
-            data.power = metadata.power
-            data.temperature = metadata.temperature
-            data.percentage = getStateOfCharge(metadata.battVolt ?? 0)
-        }
-    })
-
-    transactionSnap.docs.forEach((doc) => {
-        const metadata = doc.data()
-
-        const transactionDate = metadata.date_time.toDate()
+    transactionResult.rows.forEach(transaction => {
+        const transactionDate = new Date(transaction.date_time)
 
         if(transactionDate >= startOfDay){
-                data.revenue.daily += metadata.amount
-                data.uses.daily += 1
-            }
-
-        if(transactionDate >= startOfWeek){
-                data.revenue.weekly += metadata.amount
-                data.uses.weekly += 1
-            }
-        
-        if(transactionDate >= startOfMonth){
-                data.revenue.monthly += metadata.amount
-                data.uses.monthly += 1
+            data.revenue.daily += Number(transaction.amount || 0)
+            data.uses.daily += 1
         }
 
-        data.revenue.total += metadata.amount
-        data.uses.total += 1
-        data.total_hours += ((metadata.amount * 10) / 60)
-
-        data.transactions.push(metadata)
-    })
-
-    alertSnap.docs.forEach(doc => {
-        const metadata = doc.data()
+        if(transactionDate >= startOfWeek){
+            data.revenue.weekly += Number(transaction.amount || 0)
+            data.uses.weekly += 1
+        }
         
-        data.alerts.push(metadata)
+        if(transactionDate >= startOfMonth){
+            data.revenue.monthly += Number(transaction.amount || 0)
+            data.uses.monthly += 1
+        }
+
+        data.revenue.total += Number(transaction.amount || 0)
+        data.uses.total += 1
+        data.total_hours += ((Number(transaction.amount || 0) * 10) / 60)
+
+        data.transactions.push(transaction)
     })
 
-    data.energy_history.push(await energyHist(deviceId))
+    // Get alerts for this device
+    const alertResult = await pool.query(
+        'SELECT * FROM tbl_alerts WHERE device_id = $1 ORDER BY date_time DESC',
+        [deviceId]
+    )
+
+    alertResult.rows.forEach(alert => {
+        data.alerts.push(alert)
+    })
+
+    // Get energy history for this device
+    const energyHistResult = await pool.query(
+        'SELECT * FROM tbl_energyhistory WHERE device_id = $1 ORDER BY date_time DESC',
+        [deviceId]
+    )
+
+    data.energy_history = energyHistResult.rows
 
     return data
 }  

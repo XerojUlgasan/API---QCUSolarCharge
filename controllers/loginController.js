@@ -1,8 +1,6 @@
-const { getDocs, collection, query, where, or, and} = require("firebase/firestore")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
-const db = require("../utils/connectToFirebase")
-
+const pool = require("../utils/supabase/supabasedb")
 
 exports.login = async (req, res) => {
     console.log("Attempting a POST request for /login")
@@ -15,27 +13,23 @@ exports.login = async (req, res) => {
     }
 
     try {
-        // Query without password comparison - we'll verify password with bcrypt
-        const q = query(collection(db, "superAdmin"),
-                            or(
-                                where("username", "==", req.body.username.toLowerCase()),
-                                where("email", "==", req.body.username.toLowerCase())
-                            ))
+        // Query admin by username or email
+        const { rows } = await pool.query(
+            'SELECT * FROM tbl_admin WHERE username = $1 OR email = $1',
+            [req.body.username.toLowerCase()]
+        )
 
-        const superAdmin = await getDocs(q)
-
-        if(!superAdmin.empty){  // User found
-            const data = superAdmin.docs[0].data()
-            const userId = superAdmin.docs[0].id
+        if(rows.length > 0){  // User found
+            const admin = rows[0]
 
             // Verify password using bcrypt
-            const isPasswordValid = await bcrypt.compare(req.body.password, data.password)
+            const isPasswordValid = await bcrypt.compare(req.body.password, admin.password)
 
             if(isPasswordValid){
                 // Give Token
                 const token = jwt.sign({
-                    userId: userId,
-                    username: data.username
+                    userId: admin.admin_id,
+                    username: admin.username
                 }, process.env.JWT_SECRET_TOKEN, {expiresIn: "1d"})
 
                 // MUST RETURN "authorization: bearer <token>" when requesting

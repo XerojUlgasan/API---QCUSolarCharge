@@ -1,56 +1,19 @@
-const { deleteDoc, getDocs, query, collection, where, doc } = require("firebase/firestore")
-const db = require("./connectToFirebase")
-const getId = require("./getIds")
+const pool = require("./supabase/supabasedb")
 
 const deleteRecords = async (devId) => {
-    const toDelete = [
-        {
-            collectionName: "alerts",
-            field: "device_id",
-            ids: null
-        },{
-            collectionName: "deviceConfig",
-            field: "device_id",
-            ids: null
-        },{
-            collectionName: "devices",
-            field: "device_id",
-            ids: null
-        },{
-            collectionName: "energyHistory",
-            field: "device_id",
-            ids: null
-        },{
-            collectionName: "transactions",
-            field: "device_id",
-            ids: null
-        },{
-            collectionName: "reports",
-            field: "device_id",
-            ids: null
-        },{
-            collectionName: "alertHistory",
-            field: "device_id",
-            ids: null
-        }
-    ]
+    try {
+        // Delete device - CASCADE will automatically delete related records
+        // from tbl_deviceconfig, tbl_devicesdata, tbl_energyhistory, tbl_sessions, tbl_reports, tbl_alerts
+        await pool.query(
+            'DELETE FROM tbl_devices WHERE device_id = $1',
+            [devId]
+        )
 
-    const q = query(collection(db, "reports"), where("location", "==", devId))
-    const reportIds = await (await getDocs(q)).docs.map(docc => docc.id)
-
-    reportIds.forEach(async (id) => {
-        deleteDoc(doc(db, "reports", id))
-    })
-
-    toDelete.forEach(async (coll) => {
-        coll.ids = await getId(coll.collectionName, coll.field, devId)
-        
-        coll.ids.forEach(async (id) => {
-            deleteDoc(doc(db, coll.collectionName, id))
-        })
-    })
-
-    return
+        console.log(`Device ${devId} and all related records deleted successfully`)
+    } catch (e) {
+        console.error("Error deleting device records:", e)
+        throw e
+    }
 }
 
 module.exports = deleteRecords

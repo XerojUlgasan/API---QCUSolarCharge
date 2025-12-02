@@ -4,6 +4,7 @@
     const app = express()
     const cors = require("cors")
     const {Server} = require("socket.io")
+    const pool = require("./utils/supabase/supabasedb")
 
     const checkActiveDevice = require("./utils/checkActiveDevice")
     const checkDeviceAlert = require("./utils/checkDeviceAlerts")
@@ -47,9 +48,9 @@
 
         try {
             initializeListeners(io)
-            deviceConfListener(io)
-            await checkActiveDevice()   
-            setInterval(await checkActiveDevice, 5000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
+            // deviceConfListener(io)
+            // await checkActiveDevice()   
+            // setInterval(await checkActiveDevice, 5000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
         } catch (e) {
             console.log(e.message)
         }

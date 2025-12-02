@@ -1,121 +1,84 @@
-const { addDoc, collection, serverTimestamp, getDocs, where, query, setDoc, doc } = require("firebase/firestore")
-const db = require("../utils/connectToFirebase")
+const pool = require("../utils/supabase/supabasedb")
 const getStationLocation = require("../utils/getStationLocation")
-const getEmailRating = require("../utils/getRatingOfEmail")
 
 exports.getRates = async (req, res) => {
     console.log("Attempting a GET request for /rates")
 
-    const colRef = collection(db, "ratings")
-    const snap = await getDocs(colRef)
-
-    if(!snap.empty) {
+    try {
+        const { rows: ratings } = await pool.query('SELECT * FROM tbl_ratings')
         
-        const ratingSet = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }))
+        let previousRate = null
+        if (req.query.email) {
+            const { rows } = await pool.query(
+                'SELECT rate, comment FROM tbl_ratings WHERE email = $1 ORDER BY "dateTime" DESC LIMIT 1',
+                [req.query.email]
+            )
+            previousRate = rows[0] || null
+        }
 
         res.json({
-            ratings: ratingSet,
-            previous_rate: await getEmailRating(req.query.email),
+            ratings: ratings,
+            previous_rate: previousRate,
             station_locations: await getStationLocation()
         })
-    }else{
-        res.json([])            
+    } catch (e) {
+        res.status(500).json({ success: false, message: e.message })
     }
 }
 
 exports.setRates = async (req, res) => {
-    console.log("Attempting a POST request for /rates")
-
-    const collectionName = "ratings";
-
-    const q = query(collection(db, collectionName), 
-                    where("email", "==", req.body.email))
-
-    const snap = await getDocs(q)
-
-    if(!snap.empty){
-        console.log("Email already rated.")
-
-        const data = snap.docs.map(doc => ({
-            ...doc.data()
-        }))
-
-        res.json({
-            success: false,
-            message: "You have already submitted a rating.",
-            metadata: data
-        })
-
-        return
-    }
+    console.log("POST /rates/postrates")
     
-    // //NOTE: Sanitize the data before sending
-
-    console.log("Unique")
-
-    const cleanData = {
-        email: req.body.email,
-        name: req.body.name,
-        dateTime: serverTimestamp(),
-        location: req.body.location,
-        rate: req.body.rate,
-        comment: req.body.comment,
-        photo: req.body.photo_url || "",
-        user_id: req.body.user_id
-    }
+    const { email, name, location, building, rate, comment, photo_url, user_id } = req.body
 
     try {
-        const docRef = await addDoc(collection(db, collectionName), cleanData);
-        
-        res.json({
-            success: true
-        })
-    } catch (e) {
-        res.json({
-            success: false,
-            message: e
-        })
+        // Check if email already rated
+        const { rows: existing } = await pool.query(
+            'SELECT rating_id FROM tbl_ratings WHERE email = $1',
+            [email]
+        )
 
-        console.log(e)
+        if (existing.length > 0) {
+            return res.json({
+                success: false,
+                message: "You have already submitted a rating.",
+                metadata: existing[0]
+            })
+        }
+
+        // Insert new rating
+        await pool.query(
+            `INSERT INTO tbl_ratings (rating_id, user_id, "dateTime", email, name, building, location, rate, comment, photo) 
+             VALUES (gen_random_uuid()::text, $1, NOW(), $2, $3, $4, $5, $6, $7, $8)`,
+            [user_id, email, name, building || "", location, rate, comment || "", photo_url || ""]
+        )
+
+        res.json({ success: true })
+    } catch (e) {
+        res.status(500).json({ success: false, message: e.message })
     }
 }
 
 exports.editRates = async (req, res) => {
-    const rateId = req.body.rate_id
-    const rate = req.body.rate || 5
-    const comment = req.body.comment || ""
-    const location = req.body.location
-    const building = req.body.building
+    const { rate_id, rate = 5, comment = "", location, building } = req.body
 
-    if(!rateId || !rate || !location || !building){
-        res.json({
+    if (!rate_id || !location || !building) {
+        return res.json({
             success: false,
-            message: "Fields rate_id, rate, location, and building are required."
+            message: "Fields rate_id, location, and building are required."
         })
-
-        return
     }
 
     try {
-        await setDoc(doc(db, "ratings", rateId), {
-            rate: rate,
-            comment: comment,
-            location: location,
-            building: building
-        }, {merge: true})
+        await pool.query(
+            `UPDATE tbl_ratings 
+             SET rate = $1, comment = $2, location = $3, building = $4 
+             WHERE rating_id = $5`,
+            [rate, comment, location, building, rate_id]
+        )
 
-        res.json({
-            success: true
-        })
+        res.json({ success: true })
     } catch (e) {
-        res.json({
-            success: false,
-            message: e.message
-        })
+        res.status(500).json({ success: false, message: e.message })
     }
-
-    return
 }
