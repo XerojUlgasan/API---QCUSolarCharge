@@ -99,7 +99,10 @@ const getDeviceDetails = async (deviceId) => {
         data.uses.total += 1
         data.total_hours += ((Number(transaction.amount || 0) * 10) / 60)
 
-        data.transactions.push(transaction)
+        data.transactions.push({
+            ...transaction,
+            amount: Number(transaction.amount || 0)
+        })
     })
 
     // Get alerts for this device
@@ -118,7 +121,14 @@ const getDeviceDetails = async (deviceId) => {
         [deviceId]
     )
 
-    data.energy_history = energyHistResult.rows
+    // Convert numeric fields to numbers in energy history
+    data.energy_history = energyHistResult.rows.map(record => ({
+        ...record,
+        energy_accumulated: Number(record.energy_accumulated || 0),
+        voltage: Number(record.voltage || 0),
+        current: Number(record.current || 0),
+        temperature: Number(record.temperature || 0)
+    }))
 
     return data
 }  

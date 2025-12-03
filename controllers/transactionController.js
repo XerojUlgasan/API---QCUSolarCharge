@@ -2,20 +2,28 @@ const pool = require("../utils/supabase/supabasedb")
 
 exports.getTransactions = async (req, res) => {
     console.log("Attempting a GET request for /transactions")
-    
     try {
+        let rows
         if(req.query.device_id){
             // Retrieve transactions for specific device
-            const { rows } = await pool.query(
+            const result = await pool.query(
                 'SELECT * FROM tbl_sessions WHERE device_id = $1 ORDER BY date_time DESC',
                 [req.query.device_id]
             )
-            res.json(rows)
+            rows = result.rows
         }else {
             // Retrieve all transactions
-            const { rows } = await pool.query('SELECT * FROM tbl_sessions ORDER BY date_time DESC')
-            res.json(rows)
+            const result = await pool.query('SELECT * FROM tbl_sessions ORDER BY date_time DESC')
+            rows = result.rows
         }
+
+        // Convert amount to number
+        const transactions = rows.map(transaction => ({
+            ...transaction,
+            amount: Number(transaction.amount || 0)
+        }))
+
+        res.json(transactions)
     } catch (e) {
         res.status(500).json({ success: false, message: e.message })
     }

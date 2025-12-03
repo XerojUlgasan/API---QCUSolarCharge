@@ -4,7 +4,6 @@
     const app = express()
     const cors = require("cors")
     const {Server} = require("socket.io")
-    const pool = require("./utils/supabase/supabasedb")
 
     const checkActiveDevice = require("./utils/checkActiveDevice")
     const checkDeviceAlert = require("./utils/checkDeviceAlerts")
@@ -21,6 +20,7 @@
     const { createServer } = require("http");
     const initializeSocket = require("./utils/socket/initializeSocket");
     const {initializeListeners, deviceConfListener} = require("./utils/socket/createListeners");
+    const { initListener } = require("./utils/supabase/supabasert");
 
     app.use(cors())
     app.use(express.json())
@@ -47,6 +47,7 @@
         console.log("http://localhost:" + config.PORT)
 
         try {
+            initListener()
             initializeListeners(io)
             // deviceConfListener(io)
             // await checkActiveDevice()   
