@@ -1,9 +1,8 @@
 const NodeCache = require("node-cache")
 const OTPCache = new NodeCache()
 const bcrypt = require("bcrypt")
-const {sendEmail} = require("./emailSender");
-const { setDoc, getDocs, collection, doc } = require("firebase/firestore");
-const db = require("./connectToFirebase")
+const {sendEmail} = require("./emailSender")
+const pool = require("./supabase/supabasedb")
 
 if (!OTPCache.get("OTPList")) {
   OTPCache.set("OTPList", { list: [] });
@@ -41,6 +40,8 @@ QCU - EcoCharge Team`
         })
 
         OTPCache.set("OTPList", OTPList)
+
+        console.log(OTPCache.get("OTPList"))
         return true
     }else{
         return false
@@ -48,20 +49,37 @@ QCU - EcoCharge Team`
 }
 
 const verifyOTP = (otp, email) => {
+    console.log("Verifying OTP:", otp, "for email:", email)
+    
     const OTPList = OTPCache.get("OTPList")
-    if (!OTPList) return false
-    if(!otp || !email) return false
+    if (!OTPList || !OTPList.list) {
+        console.log("No OTP list found")
+        return false
+    }
+    
+    if(!otp || !email) {
+        console.log("Missing OTP or email")
+        return false
+    }
 
+    console.log("Current OTP list:", OTPList.list)
+    
     const res = OTPList.list.find(entry => entry.OTP === otp && 
                                         entry.email === email.toLowerCase())
+
+    if(!res) {
+        console.log("OTP not found or email doesn't match")
+        return false
+    }
 
     const curr = Date.now()
     const gapMillis = 5 * 60 * 1000 // 5 mins
     
     if((curr - res.date_time) >= gapMillis){
+        console.log("OTP expired")
         return false
     }else{
-        console.log(OTPList.list)
+        console.log("OTP verified successfully")
         return true
     }
 }
@@ -82,14 +100,20 @@ const changePassword = async (otp, password, email) => {
     if((curr - res.date_time) >= gapMillis){
         return false
     }else{
-        let snap = (await getDocs(collection(db, "superAdmin"))).docs[0]
+        // Get admin from Supabase
+        const result = await pool.query('SELECT admin_id FROM tbl_admin LIMIT 1')
+        
+        if(result.rows.length === 0){
+            return false
+        }
 
         // Hash the new password before saving
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        await setDoc(doc(db, "superAdmin", snap.id), 
-                    {password: hashedPassword}, 
-                    {merge: true})
+        await pool.query(
+            'UPDATE tbl_admin SET password = $1 WHERE admin_id = $2',
+            [hashedPassword, result.rows[0].admin_id]
+        )
 
         OTPCache.flushAll()
         return true

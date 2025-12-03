@@ -405,19 +405,19 @@ exports.verifyOtp = async (req, res) => {
     ]
     const data = require("../utils/filterObject")(key, req.body)
 
-    if(!data){
-        return res.status(400).json({message: "Invalid request"})
+    if(!data || !data.otp || !data.email){
+        return res.status(400).json({message: "Invalid request - OTP and email required"})
     }
 
-    console.log("Attempting to verify otp")
+    console.log("Attempting to verify otp for:", data.email)
     const {verifyOTP} = require("../utils/OTPVerification")
     
     if(verifyOTP(data.otp, data.email)){ // if the OTP is right
-        console.log("Accepted")
+        console.log("OTP Accepted")
         return res.status(200).json({success: true})
     }else{ //If the OTP is wrong
-        console.log("Rejected")
-        return res.status(200).json({success: false})
+        console.log("OTP Rejected")
+        return res.status(400).json({success: false})
     }
 }
 

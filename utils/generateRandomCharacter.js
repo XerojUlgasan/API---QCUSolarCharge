@@ -5,6 +5,7 @@ function generateCode(length = 6) {
     const randomIndex = Math.floor(Math.random() * chars.length);
     result += chars[randomIndex];
   }
+  console.log("OTP : " + result)
   return result;
 }
 
