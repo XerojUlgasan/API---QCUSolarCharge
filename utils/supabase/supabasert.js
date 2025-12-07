@@ -1,4 +1,5 @@
 const {createClient} = require("@supabase/supabase-js")
+const { collection } = require("firebase/firestore")
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -16,7 +17,7 @@ const tables = ["tbl_admin",
                 "tbl_sessions",
                 "tbl_users"]
 
-const initListener = () => {
+const initListener = (io) => {
     tables.forEach(table => {
         const channel = supabase
             .channel(`realtime:${table}`)
@@ -28,7 +29,11 @@ const initListener = () => {
                     table: table,
                 },
                 (payload) => {
-                    console.log(payload)
+                    io.emit("change", {
+                        table_name: payload.table,
+                        type: payload.eventType,
+                        data: payload.new
+                    })
                 }
             )
             .subscribe((status) => {

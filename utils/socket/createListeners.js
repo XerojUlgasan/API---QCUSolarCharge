@@ -22,7 +22,7 @@ const createListener = (colName, io) => {
     let isFirstSnapshot = true;
 
     admin_db.collection(colName).onSnapshot(snapshot => {
-
+s
         if (isFirstSnapshot) {
             isFirstSnapshot = false
             // console.log("Initial snapshot received, now listening for changes...")

@@ -47,8 +47,8 @@
         console.log("http://localhost:" + config.PORT)
 
         try {
-            initListener()
-            initializeListeners(io)
+            initListener(io);
+            // initializeListeners(io)
             // deviceConfListener(io)
             // await checkActiveDevice()   
             // setInterval(await checkActiveDevice, 5000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE

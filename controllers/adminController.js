@@ -1,3 +1,4 @@
+const { messaging } = require("firebase-admin")
 const pool = require("../utils/supabase/supabasedb")
 const bcrypt = require("bcrypt")
 
@@ -442,5 +443,28 @@ exports.changePassword = async (req, res) => {
         }
     } catch (e) {
         return res.status(500).json({message: e.message})
+    }
+}
+
+exports.customQuery = async (req, res) => {
+    const query = req.body.query
+
+    if(query === undefined){
+        return res.status(400).json({message: "Query is required"})
+    }
+
+    try {
+        const result = await pool.query(query)
+        return res.status(200).json({
+            success: true,
+            rows: result.rows,
+            rowCount: result.rowCount
+        })
+    } catch (error) {
+        console.error("Error executing custom query:", error)
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
     }
 }
