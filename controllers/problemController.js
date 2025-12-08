@@ -42,7 +42,7 @@ exports.setProblems = async (req, res) => {
     try {
         await pool.query(
             `INSERT INTO tbl_reports (report_id, device_id, user_id, "dateTime", name, email, description, type, status, "urgencyLevel", photo) 
-             VALUES (gen_random_uuid()::text, $1, $2, NOW(), $3, $4, $5, $6, $7, $8, $9)`,
+             VALUES (gen_random_uuid()::text, $1, $2, NOW() AT TIME ZONE 'Asia/Manila', $3, $4, $5, $6, $7, $8, $9)`,
             [location, user_id, name, email, description || "", type, "For Review", urgencyLevel, photo_url || ""]
         )
 

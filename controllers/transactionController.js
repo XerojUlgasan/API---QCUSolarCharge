@@ -41,7 +41,7 @@ exports.setTransaction = async (req, res) => {
     try {
         await pool.query(
             `INSERT INTO tbl_sessions (transaction_id, device_id, date_time, amount) 
-             VALUES (gen_random_uuid()::text, $1, NOW(), $2)`,
+             VALUES (gen_random_uuid()::text, $1, NOW() AT TIME ZONE 'Asia/Manila', $2)`,
             [device_id, amount]
         )
         
