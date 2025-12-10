@@ -1,5 +1,6 @@
 const pool = require("../utils/supabase/supabasedb")
 const defaultConfig = require("../utils/defaultConfig")
+const {getStateOfCharge} = require("../utils/getBatteryPercentage")
 
 exports.postEnergy = async (req, res) => {
     const { deviceId, energy, voltage, current, temperature } = req.body
@@ -95,6 +96,8 @@ exports.giveUpdates = async (req, res) => {
     if (voltage == undefined || current == undefined || energy == undefined || power == undefined || temperature == undefined || device_id == undefined || battVolt == undefined) {
         return res.status(400).json({ message: "Missing required fields" })
     }
+
+    battVolt = getStateOfCharge(battVolt)
 
     try {
         // Check if device exists
