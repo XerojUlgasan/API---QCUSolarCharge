@@ -27,7 +27,7 @@ exports.postContactUs = async (req, res) => {
     try {
         await pool.query(
             `INSERT INTO tbl_contacts (contact_id, user_id, subject, message, "from", "hasRead", responded, photo_url, timestamp) 
-             VALUES (gen_random_uuid()::text, $1, $2, $3, $4, false, false, $5, NOW() AT TIME ZONE 'Asia/Manila')`,
+             VALUES (gen_random_uuid()::text, $1, $2, $3, $4, false, false, $5, NOW())`,
             [user_id, subject, message, from, photo_url || null]
         )
 

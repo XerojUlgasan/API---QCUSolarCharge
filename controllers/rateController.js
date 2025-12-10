@@ -49,7 +49,7 @@ exports.setRates = async (req, res) => {
         // Insert new rating
         await pool.query(
             `INSERT INTO tbl_ratings (rating_id, user_id, "dateTime", email, name, building, location, rate, comment, photo) 
-             VALUES (gen_random_uuid()::text, $1, NOW() AT TIME ZONE 'Asia/Manila', $2, $3, $4, $5, $6, $7, $8)`,
+             VALUES (gen_random_uuid()::text, $1, NOW(), $2, $3, $4, $5, $6, $7, $8)`,
             [user_id, email, name, building || "", location, rate, comment || "", photo_url || ""]
         )
 

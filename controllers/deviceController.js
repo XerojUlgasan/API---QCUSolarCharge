@@ -26,7 +26,7 @@ exports.postEnergy = async (req, res) => {
 
         // Insert energy history
         await pool.query(
-            'INSERT INTO tbl_energyhistory ("energyHistory_id", device_id, date_time, voltage, current, energy_accumulated, temperature) VALUES (gen_random_uuid()::text, $1, NOW() AT TIME ZONE \'Asia/Manila\', $2, $3, $4, $5)',
+            'INSERT INTO tbl_energyhistory ("energyHistory_id", device_id, date_time, voltage, current, energy_accumulated, temperature) VALUES (gen_random_uuid()::text, $1, NOW(), $2, $3, $4, $5)',
             [deviceId, voltage, current, energy, temperature]
         )
 
@@ -79,7 +79,7 @@ exports.addDevice = async (req, res) => {
     try {
         // Insert device with device_id provided by the device itself
         await pool.query(
-            'INSERT INTO tbl_devices (device_id, name, location, building, date_added) VALUES ($1, $2, $3, $4, NOW() AT TIME ZONE \'Asia/Manila\')',
+            'INSERT INTO tbl_devices (device_id, name, location, building, date_added) VALUES ($1, $2, $3, $4, NOW())',
             [device_id, device_id, 'Not set', 'Not set']
         )
 
@@ -128,7 +128,7 @@ exports.giveUpdates = async (req, res) => {
                     power = $5,
                     "battVolt" = $6,
                     temperature = $7,
-                    last_updated = NOW() AT TIME ZONE 'Asia/Manila'
+                    last_updated = NOW()
                  WHERE device_id = $1`,
                 [device_id, voltage, current, energy, power, battVolt, temperature]
             )
@@ -136,7 +136,7 @@ exports.giveUpdates = async (req, res) => {
             // Insert new device data (first time receiving data from this device)
             await pool.query(
                 `INSERT INTO tbl_devicesdata (data_id, device_id, volt, current, energy, power, "battVolt", temperature, last_updated)
-                 VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, NOW() AT TIME ZONE 'Asia/Manila')`,
+                 VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, NOW())`,
                 [device_id, voltage, current, energy, power, battVolt, temperature]
             )
         }

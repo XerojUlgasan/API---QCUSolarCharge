@@ -10,9 +10,9 @@ exports.recordLogin = async (req, res) => {
     try {
         await pool.query(
             `INSERT INTO tbl_users (user_id, email, full_name, last_login) 
-             VALUES ($1, $2, $3, NOW() AT TIME ZONE 'Asia/Manila')
+             VALUES ($1, $2, $3, NOW())
              ON CONFLICT (user_id) 
-             DO UPDATE SET email = $2, full_name = $3, last_login = NOW() AT TIME ZONE 'Asia/Manila'`,
+             DO UPDATE SET email = $2, full_name = $3, last_login = NOW()`,
             [user_id, email, full_name]
         )
 
@@ -31,7 +31,7 @@ exports.recordLogout = async (req, res) => {
 
     try {
         await pool.query(
-            `UPDATE tbl_users SET last_logout = NOW() AT TIME ZONE 'Asia/Manila' WHERE user_id = $1`,
+            `UPDATE tbl_users SET last_logout = NOW() WHERE user_id = $1`,
             [user_id]
         )
 
