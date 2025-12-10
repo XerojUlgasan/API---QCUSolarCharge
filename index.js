@@ -40,9 +40,9 @@
     const server = createServer(app);
     const io = initializeSocket(server)
 
-    server.listen(config.PORT, async () => {
-        console.log("Listening to port " + config.PORT)
-        console.log("http://localhost:" + config.PORT)
+    server.listen(process.env.PORT || config.PORT, async () => {
+        console.log("Listening to port " + process.env.PORT || config.PORT)
+        console.log("http://localhost:" + process.env.PORT || config.PORT)
 
         try {
             initListener(io);
