@@ -48,7 +48,7 @@
             initListener(io);
             // initializeListeners(io)
             // deviceConfListener(io)
-            await checkActiveDevice()   
+            // await checkActiveDevice()   
             // setInterval(await checkActiveDevice, 5000) //WATCHDOG FOR ACTIVE/INACTIVE DEVICE
         } catch (e) {
             console.log(e.message)
