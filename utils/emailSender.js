@@ -48,6 +48,8 @@ const sendEmail = async (to, subject, text) => {
         text: text 
     };
 
+    console.log("Attempting to send email.............")
+
     try {
         await transporter.sendMail(mailOptions);
 
